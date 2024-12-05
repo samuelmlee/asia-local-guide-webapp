@@ -1,0 +1,25 @@
+
+// Update translation file for missing translations with Poedit
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0" srcLang="en-US">
+  <file id="ngi18n" original="ng.template">
+    <unit id="core.landing.search-subtitle">
+      <segment>
+        <source> Suggestions parmi plus de 300 000 activités </source>
+        <target> Suggestions from over 300,000 activities </target>
+      </segment>
+    </unit>
+    <unit id="core.landing.search-title">
+      <segment>
+        <source> Votre programme personnalisé </source>
+        <target> Your customized program </target>
+      </segment>
+    </unit>
+        <unit id="core.pseudo-search.input-text">
+      <segment>
+        <source> Recherche sur une destination </source>
+        <target> Search for a destination </target>
+      </segment>
+    </unit>
+  </file>
+</xliff>
