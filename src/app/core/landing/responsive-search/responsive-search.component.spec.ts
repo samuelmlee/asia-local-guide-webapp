@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PseudoSearchComponent } from './pseudo-search.component';
+import { ResponsiveSearchComponent } from './responsive-search.component';
 
 describe('PseudoSearchComponent', () => {
-  let component: PseudoSearchComponent;
-  let fixture: ComponentFixture<PseudoSearchComponent>;
+  let component: ResponsiveSearchComponent;
+  let fixture: ComponentFixture<ResponsiveSearchComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PseudoSearchComponent],
+      imports: [ResponsiveSearchComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(PseudoSearchComponent);
+    fixture = TestBed.createComponent(ResponsiveSearchComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

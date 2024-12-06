@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { PseudoSearchComponent } from './pseudo-search/pseudo-search.component';
+import { ResponsiveSearchComponent } from './responsive-search/responsive-search.component';
 
 @Component({
   selector: 'app-landing',
-  imports: [PseudoSearchComponent],
+  imports: [ResponsiveSearchComponent],
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
