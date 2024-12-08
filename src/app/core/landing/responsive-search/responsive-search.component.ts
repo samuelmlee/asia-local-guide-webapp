@@ -20,6 +20,8 @@ export class ResponsiveSearchComponent {
       width: '100%',
       maxWidth: '100%',
       position: { top: '0' },
+      autoFocus: false,
+      panelClass: 'search-dialog',
     });
   }
 }
