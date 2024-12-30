@@ -6,7 +6,7 @@
   <form (ngSubmit)="submitSearch()">
     <mat-form-field class="w-full mb-4">
       <mat-label i18n="@@core.mobile-search-dialog.input-text"
-        >Entrez une destination ou une activité</mat-label
+        >Entrez une destination</mat-label
       >
       <input
         matInput
@@ -25,6 +25,12 @@
         <mat-icon>close</mat-icon>
       </button>
       }
+
+      <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+        @for (option of filteredOptions | async; track option) {
+        <mat-option [value]="option">{{ option.name }}</mat-option>
+        }
+      </mat-autocomplete>
     </mat-form-field>
 
     <mat-form-field class="w-full mb-4">
