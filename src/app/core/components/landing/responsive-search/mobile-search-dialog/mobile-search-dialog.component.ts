@@ -1,5 +1,6 @@
+import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { FormControl, FormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import {
@@ -14,13 +15,20 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { map, Observable, startWith } from 'rxjs';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  Observable,
+  startWith,
+  switchMap,
+} from 'rxjs';
 import { Destination } from '../../../../models/destination.model';
 import { DestinationService } from '../../../../services/destination.service';
 
 @Component({
   selector: 'app-mobile-search-dialog',
   imports: [
+    CommonModule,
     MatDatepickerModule,
     MatNativeDateModule,
     MatDialogModule,
@@ -29,11 +37,13 @@ import { DestinationService } from '../../../../services/destination.service';
     MatIconModule,
     MatInputModule,
     MatAutocompleteModule,
+    ReactiveFormsModule,
     FormsModule,
   ],
   providers: [
     { provide: DateAdapter, useClass: NativeDateAdapter },
     { provide: MAT_DATE_FORMATS, useValue: MAT_NATIVE_DATE_FORMATS },
+    DestinationService,
   ],
   templateUrl: './mobile-search-dialog.component.html',
   styleUrl: './mobile-search-dialog.component.scss',
@@ -46,16 +56,17 @@ export class MobileSearchDialogComponent implements OnInit {
 
   public filteredOptions: Observable<Destination[]> | undefined;
 
-  public constructor(private destinationService: DestinationService) {}
+  constructor(private destinationService: DestinationService) {}
 
   public ngOnInit(): void {
     this.filteredOptions = this.destinationControl.valueChanges.pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
       startWith(''),
-      map((destination) => {
-        const name =
-          typeof destination === 'string' ? destination : destination?.name;
-        return name ? this._filter(name as string) : [];
-      })
+      switchMap((value) => {
+        const query = typeof value === 'string' ? value : '';
+        return query ? this._filter(query as string) : [];
+      }),
     );
   }
 
@@ -65,9 +76,17 @@ export class MobileSearchDialogComponent implements OnInit {
     return value.name;
   }
 
-  private _filter(name: string): Destination[] {
+  private async _filter(name: string): Promise<Destination[]> {
     const filterValue = name.toLowerCase();
 
-    return this.destinationService.getDestinationsForQuery(filterValue);
+    try {
+      const destinations =
+        await this.destinationService.getDestinationsForQuery(filterValue);
+
+      return destinations;
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
   }
 }

@@ -30,6 +30,19 @@ module.exports = tseslint.config(
           style: "kebab-case",
         },
       ],
+      "@typescript-eslint/explicit-member-accessibility": [
+        "error",
+        {
+          accessibility: "explicit",
+          overrides: {
+            accessors: "off",
+            constructors: "no-public",
+            methods: "explicit",
+            properties: "explicit",
+            parameterProperties: "explicit",
+          },
+        },
+      ],
     },
   },
   {

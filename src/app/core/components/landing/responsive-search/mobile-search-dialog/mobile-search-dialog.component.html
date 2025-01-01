@@ -9,26 +9,38 @@
         >Entrez une destination</mat-label
       >
       <input
-        matInput
         type="text"
-        minlength="4"
-        name="searchQuery"
-        [(ngModel)]="searchQuery"
+        matInput
+        [formControl]="destinationControl"
+        [matAutocomplete]="auto"
       />
-      @if (searchQuery()) {
-      <button
-        matSuffix
-        mat-icon-button
-        aria-label="Clear"
-        (click)="searchQuery.set('')"
-      >
-        <mat-icon>close</mat-icon>
-      </button>
+      @if (destinationControl.value) {
+        <button
+          matSuffix
+          mat-icon-button
+          aria-label="Clear"
+          (click)="destinationControl.setValue('')"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
       }
 
       <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
-        @for (option of filteredOptions | async; track option) {
-        <mat-option [value]="option">{{ option.name }}</mat-option>
+        @for (
+          destination of filteredOptions | async;
+          track destination.destinationId
+        ) {
+          <mat-option [value]="destination">
+            <div class="p-2 flex items-center">
+              <mat-icon class="icon-scale-40" fontSet="material-icons-outlined"
+                >place</mat-icon
+              >
+              <div class="ml-4">
+                <div class="text-base">{{ destination.name }}</div>
+                <div class="text-xs">{{ destination.parentName }}</div>
+              </div>
+            </div>
+          </mat-option>
         }
       </mat-autocomplete>
     </mat-form-field>
