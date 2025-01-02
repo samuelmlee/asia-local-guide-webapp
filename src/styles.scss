@@ -32,3 +32,12 @@ body {
 .icon-scale-40 {
   transform: scale(1.4);
 }
+
+mat-option.mat-mdc-option {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.autocomplete-80 {
+  max-height: 80vh !important;
+}

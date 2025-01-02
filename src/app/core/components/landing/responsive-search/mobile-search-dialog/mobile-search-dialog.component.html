@@ -25,18 +25,28 @@
         </button>
       }
 
-      <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+      <mat-autocomplete
+        class="autocomplete-80"
+        #auto="matAutocomplete"
+        [displayWith]="displayFn"
+      >
         @for (
           destination of filteredOptions | async;
           track destination.destinationId
         ) {
-          <mat-option [value]="destination">
-            <div class="p-2 flex items-center">
+          <mat-option
+            [value]="destination"
+            class="border-b border-solid border-zinc-300"
+          >
+            <div class="py-4 px-2 flex items-center">
               <mat-icon class="icon-scale-40" fontSet="material-icons-outlined"
                 >place</mat-icon
               >
               <div class="ml-4">
-                <div class="text-base">{{ destination.name }}</div>
+                <div class="text-base">
+                  <b>{{ destination.name.substring(0, 2) }}</b
+                  >{{ destination.name.substring(2) }}
+                </div>
                 <div class="text-xs">{{ destination.parentName }}</div>
               </div>
             </div>
