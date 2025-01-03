@@ -19,6 +19,7 @@ import {
   debounceTime,
   distinctUntilChanged,
   Observable,
+  of,
   startWith,
   switchMap,
 } from 'rxjs';
@@ -52,7 +53,7 @@ import { DestinationService } from '../../../../services/destination.service';
 export class MobileSearchDialogComponent implements OnInit {
   public destinationControl = new FormControl<string | Destination>('');
 
-  public startDate = new Date();
+  public minDate = new Date();
 
   public filteredOptions: Observable<Destination[]> | undefined;
 
@@ -65,7 +66,7 @@ export class MobileSearchDialogComponent implements OnInit {
       startWith(''),
       switchMap((value) => {
         const query = typeof value === 'string' ? value : '';
-        return query ? this._filter(query as string) : [];
+        return query ? this._filter(query as string) : of([]);
       }),
     );
   }

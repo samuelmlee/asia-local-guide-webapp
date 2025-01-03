@@ -44,8 +44,7 @@
               >
               <div class="ml-4">
                 <div class="text-base">
-                  <b>{{ destination.name.substring(0, 2) }}</b
-                  >{{ destination.name.substring(2) }}
+                  {{ destination.name }}
                 </div>
                 <div class="text-xs">{{ destination.parentName }}</div>
               </div>
@@ -63,8 +62,8 @@
         matIconSuffix
         [for]="picker"
       ></mat-datepicker-toggle>
-      <mat-date-range-input [rangePicker]="picker">
-        <input matStartDate [min]="startDate" />
+      <mat-date-range-input [rangePicker]="picker" [min]="minDate">
+        <input matStartDate />
         <input matEndDate />
       </mat-date-range-input>
       <mat-date-range-picker #picker touchUi="true"></mat-date-range-picker>
