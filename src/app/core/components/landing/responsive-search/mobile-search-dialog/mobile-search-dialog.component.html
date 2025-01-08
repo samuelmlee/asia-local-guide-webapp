@@ -68,6 +68,12 @@
       </mat-date-range-input>
       <mat-date-range-picker #picker touchUi="true"></mat-date-range-picker>
     </mat-form-field>
+
+    <mat-chip-listbox multiple class="mb-8">
+      @for (tag of activityTags; track tag) {
+        <mat-chip-option>{{ tag }}</mat-chip-option>
+      }
+    </mat-chip-listbox>
   </form>
 
   <button mat-flat-button [mat-dialog-close]="true" i18n="@@common.search">

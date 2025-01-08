@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
+import { MatChipsModule } from '@angular/material/chips';
 import {
   DateAdapter,
   MAT_DATE_FORMATS,
@@ -31,6 +32,7 @@ import { DestinationService } from '../../../../services/destination.service';
   imports: [
     CommonModule,
     MatDatepickerModule,
+    MatChipsModule,
     MatNativeDateModule,
     MatDialogModule,
     MatButtonModule,
@@ -56,6 +58,14 @@ export class MobileSearchDialogComponent implements OnInit {
   public minDate = new Date();
 
   public filteredOptions: Observable<Destination[]> | undefined;
+
+  public activityTags: string[] = [
+    'Art et culture',
+    'Gastronomie',
+    'Activités sportives',
+    'Évènements',
+    'Visites guidées',
+  ];
 
   constructor(private destinationService: DestinationService) {}
 
