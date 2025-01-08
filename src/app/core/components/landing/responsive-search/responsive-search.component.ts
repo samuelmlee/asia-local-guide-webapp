@@ -13,7 +13,7 @@ import { MobileSearchDialogComponent } from './mobile-search-dialog/mobile-searc
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ResponsiveSearchComponent {
-  constructor(private dialog: MatDialog) {}
+  constructor(private readonly dialog: MatDialog) {}
 
   public openSearchDialog(): void {
     this.dialog.open(MobileSearchDialogComponent, {

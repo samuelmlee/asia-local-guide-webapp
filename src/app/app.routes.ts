@@ -6,4 +6,12 @@ export const routes: Routes = [
     path: '',
     component: LandingComponent,
   },
+  {
+    path: 'calendar',
+    loadComponent: () => {
+      return import(
+        './features/calendar/components/calendar/calendar.component'
+      ).then((m) => m.CalendarComponent);
+    },
+  },
 ];

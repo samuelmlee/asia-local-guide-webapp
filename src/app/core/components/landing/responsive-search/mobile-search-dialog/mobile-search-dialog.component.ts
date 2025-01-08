@@ -12,10 +12,11 @@ import {
   NativeDateAdapter,
 } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { Router } from '@angular/router';
 import {
   debounceTime,
   distinctUntilChanged,
@@ -67,7 +68,11 @@ export class MobileSearchDialogComponent implements OnInit {
     'Visites guidées',
   ];
 
-  constructor(private destinationService: DestinationService) {}
+  constructor(
+    private readonly destinationService: DestinationService,
+    private readonly router: Router,
+    private readonly dialogRef: MatDialogRef<MobileSearchDialogComponent>,
+  ) {}
 
   public ngOnInit(): void {
     this.filteredOptions = this.destinationControl.valueChanges.pipe(
@@ -81,7 +86,14 @@ export class MobileSearchDialogComponent implements OnInit {
     );
   }
 
-  public submitSearch(): void {}
+  public submitSearch(): void {
+    this.router.navigate(['/calendar'], {
+      state: {
+        request: { name: 'Some name' },
+      },
+    });
+    this.dialogRef.close();
+  }
 
   public displayFn(value: Destination): string {
     return value.name;

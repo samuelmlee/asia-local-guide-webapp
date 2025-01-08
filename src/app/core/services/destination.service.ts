@@ -8,7 +8,7 @@ import { Destination } from '../models/destination.model';
 export class DestinationService {
   private env = environment;
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   public async getDestinationsForQuery(query: string): Promise<Destination[]> {
     const destinations$ = this.http.get<Destination[]>(

@@ -3,7 +3,7 @@
     Configurez votre recherche
   </h6>
 
-  <form (ngSubmit)="submitSearch()">
+  <form>
     <mat-form-field class="w-full mb-4">
       <mat-label i18n="@@core.mobile-search-dialog.input-text"
         >Entrez une destination</mat-label
@@ -76,7 +76,7 @@
     </mat-chip-listbox>
   </form>
 
-  <button mat-flat-button [mat-dialog-close]="true" i18n="@@common.search">
+  <button mat-flat-button (click)="submitSearch()" i18n="@@common.search">
     Rechercher
   </button>
 </div>
