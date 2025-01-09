@@ -1,6 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -25,7 +30,9 @@ import {
   startWith,
   switchMap,
 } from 'rxjs';
+import { ActivityTag } from '../../../../models/activity-tag.model';
 import { Destination } from '../../../../models/destination.model';
+import { SearchRequest } from '../../../../models/search-request.model';
 import { DestinationService } from '../../../../services/destination.service';
 
 @Component({
@@ -54,19 +61,24 @@ import { DestinationService } from '../../../../services/destination.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MobileSearchDialogComponent implements OnInit {
-  public destinationControl = new FormControl<string | Destination>('');
-
   public minDate = new Date();
 
   public filteredOptions: Observable<Destination[]> | undefined;
 
-  public activityTags: string[] = [
-    'Art et culture',
-    'Gastronomie',
-    'Activités sportives',
-    'Évènements',
-    'Visites guidées',
+  public activityTags: ActivityTag[] = [
+    { id: 21910, name: 'Art et culture' },
+    { id: 21911, name: 'Gastronomie' },
+    { id: 21909, name: 'Activités sportives' },
+    { id: 21916, name: 'Évènements' },
+    { id: 21612, name: 'Visites guidées' },
   ];
+
+  public readonly searchForm = new FormGroup({
+    startDate: new FormControl<Date | null>(null),
+    endDate: new FormControl<Date | null>(null),
+    destination: new FormControl<string | Destination>(''),
+    activities: new FormControl<ActivityTag[]>([]),
+  });
 
   constructor(
     private readonly destinationService: DestinationService,
@@ -75,21 +87,29 @@ export class MobileSearchDialogComponent implements OnInit {
   ) {}
 
   public ngOnInit(): void {
-    this.filteredOptions = this.destinationControl.valueChanges.pipe(
-      debounceTime(500),
-      distinctUntilChanged(),
-      startWith(''),
-      switchMap((value) => {
-        const query = typeof value === 'string' ? value : '';
-        return query ? this._filter(query as string) : of([]);
-      }),
-    );
+    this.filteredOptions = this.searchForm
+      .get('destination')
+      ?.valueChanges.pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        startWith(''),
+        switchMap((value) => {
+          const query = typeof value === 'string' ? value : '';
+          return query ? this._filter(query as string) : of([]);
+        }),
+      );
   }
 
   public submitSearch(): void {
+    if (this.searchForm.invalid) {
+      return;
+    }
+
+    const request = this.searchForm.value as SearchRequest;
+
     this.router.navigate(['/calendar'], {
       state: {
-        request: { name: 'Some name' },
+        request,
       },
     });
     this.dialogRef.close();

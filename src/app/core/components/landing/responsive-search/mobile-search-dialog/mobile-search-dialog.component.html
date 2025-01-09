@@ -3,7 +3,7 @@
     Configurez votre recherche
   </h6>
 
-  <form>
+  <form [formGroup]="searchForm">
     <mat-form-field class="w-full mb-4">
       <mat-label i18n="@@core.mobile-search-dialog.input-text"
         >Entrez une destination</mat-label
@@ -11,15 +11,15 @@
       <input
         type="text"
         matInput
-        [formControl]="destinationControl"
+        formControlName="destination"
         [matAutocomplete]="auto"
       />
-      @if (destinationControl.value) {
+      @if (searchForm.get("destination")?.value) {
         <button
           matSuffix
           mat-icon-button
           aria-label="Clear"
-          (click)="destinationControl.setValue('')"
+          (click)="searchForm.get('destination')?.setValue('')"
         >
           <mat-icon>close</mat-icon>
         </button>
@@ -63,15 +63,15 @@
         [for]="picker"
       ></mat-datepicker-toggle>
       <mat-date-range-input [rangePicker]="picker" [min]="minDate">
-        <input matStartDate />
-        <input matEndDate />
+        <input matStartDate formControlName="startDate" />
+        <input matEndDate formControlName="endDate" />
       </mat-date-range-input>
       <mat-date-range-picker #picker touchUi="true"></mat-date-range-picker>
     </mat-form-field>
 
-    <mat-chip-listbox multiple class="mb-8">
+    <mat-chip-listbox formControlName="activities" multiple class="mb-8">
       @for (tag of activityTags; track tag) {
-        <mat-chip-option>{{ tag }}</mat-chip-option>
+        <mat-chip-option [value]="tag">{{ tag.name }}</mat-chip-option>
       }
     </mat-chip-listbox>
   </form>
