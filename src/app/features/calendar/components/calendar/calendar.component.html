@@ -1,1 +1,10 @@
-<p>calendar works!</p>
+<app-responsive-search
+  class="flex w-full px-4 mb-2"
+  [template]="resultTemplate"
+>
+  <ng-template #resultTemplate>
+    <b>{{ destination() }}</b> • {{ date() }}
+  </ng-template>
+</app-responsive-search>
+
+<hr class="h-px divide-gray-400 mb-4" />
