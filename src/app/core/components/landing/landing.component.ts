@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ResponsiveSearchComponent } from './responsive-search/responsive-search.component';
+import { ResponsiveSearchComponent } from '../../../features/search/components/responsive-search/responsive-search.component';
 
 @Component({
   selector: 'app-landing',

@@ -30,10 +30,10 @@ import {
   startWith,
   switchMap,
 } from 'rxjs';
-import { ActivityTag } from '../../../../models/activity-tag.model';
-import { Destination } from '../../../../models/destination.model';
-import { SearchRequest } from '../../../../models/search-request.model';
-import { DestinationService } from '../../../../services/destination.service';
+import { ActivityTag } from '../../../../features/search/models/activity-tag.model';
+import { Destination } from '../../../../features/search/models/destination.model';
+import { SearchRequest } from '../../../../features/search/models/search-request.model';
+import { DestinationService } from '../../services/destination.service';
 
 @Component({
   selector: 'app-mobile-search-dialog',

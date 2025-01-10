@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MobileSearchDialogComponent } from './mobile-search-dialog/mobile-search-dialog.component';
+import { MobileSearchDialogComponent } from '../mobile-search-dialog/mobile-search-dialog.component';
 
 @Component({
   selector: 'app-responsive-search',
