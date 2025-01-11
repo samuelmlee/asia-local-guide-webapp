@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ResponsiveSearchComponent } from '../../../search/components/responsive-search/responsive-search.component';
 import { SearchRequest } from '../../../search/models/search-request.model';
-import { CalendarDay } from '../../models/calendar-day.model';
 
 @Component({
   selector: 'app-calendar',
@@ -28,20 +27,5 @@ export class CalendarComponent {
     const formattedDate = `${searchRequest.startDate?.toLocaleDateString('default', { month: 'long', day: '2-digit' })} - ${searchRequest.endDate?.getDate()}`;
 
     this.date.set(formattedDate);
-  }
-
-  private generateCalendarDays(startDate: Date, endDate: Date): CalendarDay[] {
-    const calendarDays: CalendarDay[] = [];
-    const currentDate = new Date(startDate);
-
-    while (currentDate <= endDate) {
-      calendarDays.push({
-        date: new Date(currentDate),
-      });
-
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    return calendarDays;
   }
 }
