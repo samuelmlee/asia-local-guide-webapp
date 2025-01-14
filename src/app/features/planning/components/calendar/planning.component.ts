@@ -4,13 +4,13 @@ import { ResponsiveSearchComponent } from '../../../search/components/responsive
 import { SearchRequest } from '../../../search/models/search-request.model';
 
 @Component({
-  selector: 'app-calendar',
+  selector: 'app-planning',
   imports: [ResponsiveSearchComponent],
-  templateUrl: './calendar.component.html',
-  styleUrl: './calendar.component.scss',
+  templateUrl: './planning.component.html',
+  styleUrl: './planning.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CalendarComponent {
+export class PlanningComponent {
   public readonly destination = signal('');
 
   public readonly date = signal('');
