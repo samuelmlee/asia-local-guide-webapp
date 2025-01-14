@@ -30,6 +30,7 @@ import {
   startWith,
   switchMap,
 } from 'rxjs';
+import { LoggerService } from '../../../../core/services/logger.service';
 import { ActivityTag } from '../../../../features/search/models/activity-tag.model';
 import { Destination } from '../../../../features/search/models/destination.model';
 import { SearchRequest } from '../../../../features/search/models/search-request.model';
@@ -84,6 +85,7 @@ export class MobileSearchDialogComponent implements OnInit {
     private readonly destinationService: DestinationService,
     private readonly router: Router,
     private readonly dialogRef: MatDialogRef<MobileSearchDialogComponent>,
+    private readonly logger: LoggerService,
   ) {}
 
   public ngOnInit(): void {
@@ -128,7 +130,7 @@ export class MobileSearchDialogComponent implements OnInit {
 
       return destinations;
     } catch (error) {
-      console.error(error);
+      this.logger.error('Error while fetching Destinations', error);
       return [];
     }
   }
