@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environments';
 import { SearchRequestDTO } from '../../search/models/search-request-dto.model';
-import { DayPlan } from '../models/calendar-day.model';
+import { DayPlan } from '../models/day-plan.model';
 
 @Injectable()
 export class PlanningService {

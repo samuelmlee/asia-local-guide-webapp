@@ -1,1 +1,7 @@
-<p>calendar-day works!</p>
+@if (dayPlan) {
+  <div>{{ dayPlan.date }}</div>
+
+  @for (dayActivity of dayPlan.activities; track dayActivity.startTime) {
+    <app-planning-activity [dayActivity]="dayActivity"></app-planning-activity>
+  }
+}

@@ -7,10 +7,10 @@ export const routes: Routes = [
     component: LandingComponent,
   },
   {
-    path: 'calendar',
+    path: 'planning',
     loadComponent: () => {
       return import(
-        './features/planning/components/calendar/planning.component'
+        './features/planning/components/planning/planning.component'
       ).then((m) => m.PlanningComponent);
     },
   },

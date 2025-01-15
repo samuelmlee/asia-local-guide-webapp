@@ -1,0 +1,25 @@
+@if (activity() !== null) {
+  <div class="h-60 pt-2 px-4 text-base font-normal flex">
+    <div>
+      <img src="{{ imageUrl() }}" alt="Activity Image" />
+    </div>
+    <div>
+      <div>
+        {{ activity()?.combinedAverageRating | number: "1.0-0" }} ({{
+          activity()?.reviewCount
+        }})
+      </div>
+      <div>
+        {{ activity()?.title }}
+      </div>
+      <div>
+        {{
+          activity()?.durationMinutes
+            ? (activity()?.durationMinutes! / 60 | number: "1.0-0")
+            : ""
+        }}
+      </div>
+      <div>{{ activity()?.fromPrice }}</div>
+    </div>
+  </div>
+}

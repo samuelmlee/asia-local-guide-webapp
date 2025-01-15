@@ -109,7 +109,7 @@ export class MobileSearchDialogComponent implements OnInit {
 
     const request = this.searchForm.value as SearchRequest;
 
-    this.router.navigate(['/calendar'], {
+    this.router.navigate(['/planning'], {
       state: {
         request,
       },

@@ -1,6 +1,8 @@
 export interface SearchRequestDTO {
-  startDateISO: string;
-  endDateISO: string;
+  // Date needs to be in ISO format
+  startDate: string;
+  // Date needs to be in ISO format
+  endDate: string;
   destinationId: number;
   activityTagIds: number[];
 }
