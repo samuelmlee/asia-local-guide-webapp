@@ -5,11 +5,13 @@ import {
   Input,
   signal,
 } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { DayActivity } from '../../models/day-activity.model';
 
 @Component({
   selector: 'app-planning-activity',
-  imports: [CommonModule],
+  imports: [CommonModule, MatIconModule, MatButtonModule],
   templateUrl: './planning-activity.component.html',
   styleUrl: './planning-activity.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,7 +34,9 @@ export class PlanningActivityComponent {
     const coverImage = dayActivity.images.find((image) => image.isCover);
 
     if (coverImage && coverImage.variants.length > 0) {
-      const lastVariant = coverImage.variants[coverImage.variants.length - 1];
+      const lastVariant =
+        coverImage.variants.find((v) => v.width === 360 && v.height === 240) ||
+        coverImage.variants[0];
       this.imageUrl.set(lastVariant.url);
     } else {
       this.imageUrl.set(null);

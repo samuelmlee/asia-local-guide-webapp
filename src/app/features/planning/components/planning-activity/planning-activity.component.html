@@ -1,25 +1,54 @@
-@if (activity() !== null) {
-  <div class="h-60 pt-2 px-4 text-base font-normal flex">
-    <div>
-      <img src="{{ imageUrl() }}" alt="Activity Image" />
-    </div>
-    <div>
-      <div>
-        {{ activity()?.combinedAverageRating | number: "1.0-0" }} ({{
-          activity()?.reviewCount
-        }})
+@if (activity(); as activity) {
+  <div class="h-60 mt-2 mx-4 text-base font-normal">
+    <div class="flex gap-4 rounded-md border border-solid border-zinc-300">
+      <div class="grow shrink basis-2/5">
+        <img
+          class="object-cover h-full w-full"
+          src="{{ imageUrl() }}"
+          alt="Activity Image"
+        />
       </div>
-      <div>
-        {{ activity()?.title }}
+      <div class="grow shrink basis-3/5 pr-4 py-4">
+        <div class="flex mb-2">
+          <mat-icon
+            fontIcon="star"
+            class="rating-icon text-emerald-600"
+          ></mat-icon>
+          {{ activity.combinedAverageRating | number: "1.0-0" }} ({{
+            activity.reviewCount
+          }})
+        </div>
+        <div>
+          <b>
+            {{ activity.title }}
+          </b>
+        </div>
+        <div class="flex">
+          <mat-icon
+            fontIcon="schedule"
+            class="rating-icon text-gray-300"
+          ></mat-icon>
+          {{
+            activity.durationMinutes
+              ? (activity.durationMinutes! / 60 | number: "1.0-0")
+              : ""
+          }}
+          <div class="ml-1" i18n="@@planning.planning-activity.hour">
+            heures
+          </div>
+        </div>
+        <div class="flex flex-col items-end">
+          <div i18n="@@planning.planning-activity.from">à partir de</div>
+          <div class="text-xl">
+            <b> {{ activity.fromPrice }} EUR </b>
+          </div>
+        </div>
+        <div class="flex items-center">
+          {{ activity.startTime | date: "shortTime" }} -
+          {{ activity.endTime | date: "shortTime" }}
+          <button mat-raised-button>Réservation</button>
+        </div>
       </div>
-      <div>
-        {{
-          activity()?.durationMinutes
-            ? (activity()?.durationMinutes! / 60 | number: "1.0-0")
-            : ""
-        }}
-      </div>
-      <div>{{ activity()?.fromPrice }}</div>
     </div>
   </div>
 }
