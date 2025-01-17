@@ -109,6 +109,10 @@ export class MobileSearchDialogComponent implements OnInit {
 
     const request = this.searchForm.value as SearchRequest;
 
+    this.router.routeReuseStrategy.shouldReuseRoute = function () {
+      return false;
+    };
+
     this.router.navigate(['/planning'], {
       state: {
         request,
