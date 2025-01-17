@@ -66,7 +66,11 @@
         <input matStartDate formControlName="startDate" />
         <input matEndDate formControlName="endDate" />
       </mat-date-range-input>
-      <mat-date-range-picker #picker touchUi="true"></mat-date-range-picker>
+      <mat-date-range-picker
+        #picker
+        touchUi="true"
+        restoreFocus="false"
+      ></mat-date-range-picker>
     </mat-form-field>
 
     <mat-chip-listbox formControlName="activities" multiple class="mb-8">
