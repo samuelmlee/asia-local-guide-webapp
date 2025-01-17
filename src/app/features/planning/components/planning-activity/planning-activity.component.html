@@ -1,14 +1,16 @@
 @if (activity(); as activity) {
-  <div class="h-60 mt-2 mx-4 text-base font-normal">
-    <div class="flex gap-4 rounded-md border border-solid border-zinc-300">
+  <div class="h-64 pt-2 px-4 text-base font-normal">
+    <div
+      class="h-full flex gap-4 rounded-md border border-solid border-zinc-300"
+    >
       <div class="grow shrink basis-2/5">
         <img
-          class="object-cover h-full w-full"
+          class="rounded-l-md object-cover h-full w-full"
           src="{{ imageUrl() }}"
           alt="Activity Image"
         />
       </div>
-      <div class="grow shrink basis-3/5 pr-4 py-4">
+      <div class="flex flex-col grow shrink basis-3/5 pr-4 py-2">
         <div class="flex mb-2">
           <mat-icon
             fontIcon="star"
@@ -37,13 +39,13 @@
             heures
           </div>
         </div>
-        <div class="flex flex-col items-end">
+        <div class="flex flex-col items-end mt-auto">
           <div i18n="@@planning.planning-activity.from">à partir de</div>
           <div class="text-xl">
             <b> {{ activity.fromPrice }} EUR </b>
           </div>
         </div>
-        <div class="flex items-center">
+        <div class="flex items-center justify-between">
           {{ activity.startTime | date: "shortTime" }} -
           {{ activity.endTime | date: "shortTime" }}
           <button mat-raised-button>Réservation</button>

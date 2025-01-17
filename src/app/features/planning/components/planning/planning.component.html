@@ -7,8 +7,6 @@
   </ng-template>
 </app-responsive-search>
 
-<hr class="h-px divide-gray-400 mb-4" />
-
 @for (dayPlan of dayPlans(); track dayPlan.date) {
   <app-planning-day [dayPlan]="dayPlan"></app-planning-day>
 }
