@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { dayPlansString } from '../../../../../assets/mocks/ho_chi_minh_planning';
 import { LoggerService } from '../../../../core/services/logger.service';
 import { ResponsiveSearchComponent } from '../../../search/components/responsive-search/responsive-search.component';
 import { SearchRequestDTO } from '../../../search/models/search-request-dto.model';
@@ -57,16 +56,14 @@ export class PlanningComponent {
 
       this.validateSearchRequestDTO(searchRequestDTO);
 
-      // TODO: Uncomment this line when the backend is ready
+      const dayPlans: DayPlan[] =
+        await this.planningService.getDayPlansForRequest(searchRequestDTO);
 
-      // const dayPlans: DayPlan[] =
-      //   await this.planningService.getDayPlansForRequest(searchRequestDTO);
+      this.dayPlans.set(dayPlans);
 
-      // this.dayPlans.set(dayPlans);
-
-      const jsonObj = JSON.parse(dayPlansString);
-      const dayPlansList = jsonObj as DayPlan[];
-      this.dayPlans.set(dayPlansList);
+      // const jsonObj = JSON.parse(dayPlansString);
+      // const dayPlansList = jsonObj as DayPlan[];
+      // this.dayPlans.set(dayPlansList);
     } catch (error) {
       this.logger.error('Error while fetching DayPlans', error);
       this.dayPlans.set([]);
