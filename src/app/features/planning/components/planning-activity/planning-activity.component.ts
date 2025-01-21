@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { LoggerService } from '../../../../core/services/logger.service';
 import { DayActivity } from '../../models/day-activity.model';
 
 @Component({
@@ -28,6 +29,17 @@ export class PlanningActivityComponent {
   public readonly activity = signal<DayActivity | null>(null);
 
   public readonly imageUrl = signal<string | null>(null);
+
+  constructor(private logger: LoggerService) {}
+
+  public navigateToProvider(activity: DayActivity): void {
+    if (!activity || !activity.providerUrl) {
+      this.logger.warning('No provider URL found for activity', activity);
+      return;
+    }
+
+    window.open(activity.providerUrl, '_blank');
+  }
 
   private resolveImageUrl(dayActivity: DayActivity): void {
     // TODO: redo resolve img URL according to viewport

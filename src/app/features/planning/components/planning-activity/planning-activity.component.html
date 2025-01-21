@@ -46,9 +46,17 @@
           </div>
         </div>
         <div class="flex items-center justify-between">
-          {{ activity.startTime | date: "shortTime" }} -
-          {{ activity.endTime | date: "shortTime" }}
-          <button mat-raised-button>Réservation</button>
+          <b>
+            {{ activity.startTime | date: "shortTime" }} -
+            {{ activity.endTime | date: "shortTime" }}
+          </b>
+          <button
+            i18n="@@planning.planning-activity.book"
+            (click)="navigateToProvider(activity)"
+            mat-raised-button
+          >
+            Réserver
+          </button>
         </div>
       </div>
     </div>

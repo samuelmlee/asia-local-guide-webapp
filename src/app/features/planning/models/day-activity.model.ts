@@ -7,6 +7,7 @@ export interface DayActivity {
   durationMinutes: number;
   fromPrice: number;
   images: Image[];
+  providerUrl: string;
   startTime: Date;
   endTime: Date;
 }
