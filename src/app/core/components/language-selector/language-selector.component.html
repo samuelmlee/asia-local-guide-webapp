@@ -1,0 +1,11 @@
+<button mat-raised-button [matMenuTriggerFor]="menu">
+  <span class="text-sm">{{ selectedLanguage() }}</span>
+</button>
+<mat-menu #menu="matMenu">
+  <button mat-menu-item (click)="selectLanguage('FR')">
+    <span>FR</span>
+  </button>
+  <button mat-menu-item (click)="selectLanguage('EN')">
+    <span>EN</span>
+  </button>
+</mat-menu>
