@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
   selector: 'app-language-selector',
-  imports: [MatMenuModule, MatIconModule],
+  imports: [MatMenuModule, MatIconModule, MatButtonModule],
   templateUrl: './language-selector.component.html',
   styleUrl: './language-selector.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
