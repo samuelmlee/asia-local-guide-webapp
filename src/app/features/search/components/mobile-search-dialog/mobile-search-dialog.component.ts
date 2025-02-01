@@ -11,8 +11,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import {
   DateAdapter,
-  MAT_DATE_FORMATS,
-  MAT_NATIVE_DATE_FORMATS,
   MatNativeDateModule,
   NativeDateAdapter,
 } from '@angular/material/core';
@@ -54,7 +52,6 @@ import { DestinationService } from '../../services/destination.service';
   ],
   providers: [
     { provide: DateAdapter, useClass: NativeDateAdapter },
-    { provide: MAT_DATE_FORMATS, useValue: MAT_NATIVE_DATE_FORMATS },
     DestinationService,
   ],
   templateUrl: './mobile-search-dialog.component.html',

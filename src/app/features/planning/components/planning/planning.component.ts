@@ -49,8 +49,8 @@ export class PlanningComponent {
     try {
       const searchRequestDTO: SearchRequestDTO = {
         destinationId: request.destination.destinationId,
-        startDate: request.startDate?.toISOString() ?? '',
-        endDate: request.endDate?.toISOString() ?? '',
+        startDate: request.startDate?.toLocaleDateString() ?? '',
+        endDate: request.endDate?.toLocaleDateString() ?? '',
         activityTagIds: request.activities.map((activity) => activity.id),
       };
 
