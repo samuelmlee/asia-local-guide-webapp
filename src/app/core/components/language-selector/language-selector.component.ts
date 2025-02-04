@@ -11,10 +11,10 @@ import { MatMenuModule } from '@angular/material/menu';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LanguageSelectorComponent {
-  public selectedLanguage = signal('FR');
+  public selectedLocale = signal('en-GB');
 
-  public selectLanguage(language: string): void {
-    this.selectedLanguage.set(language);
+  public selectLocale(language: string): void {
+    this.selectedLocale.set(language);
     // Add additional logic updating a translation service
   }
 }

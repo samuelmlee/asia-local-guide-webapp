@@ -20,6 +20,17 @@ export class PlanningService {
     );
 
     const calendarDays = await firstValueFrom(calendarDays$);
-    return calendarDays;
+
+    const parsedDays = calendarDays.map((dayPlan) => ({
+      ...dayPlan,
+      date: new Date(dayPlan.date),
+      activities: dayPlan.activities.map((activity) => ({
+        ...activity,
+        startTime: new Date(activity.startTime),
+        endTime: new Date(activity.endTime),
+      })),
+    }));
+
+    return parsedDays;
   }
 }

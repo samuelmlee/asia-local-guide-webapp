@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { DayPlan } from '../../models/day-plan.model';
 import { PlanningActivityComponent } from '../planning-activity/planning-activity.component';
 
@@ -11,6 +11,19 @@ import { PlanningActivityComponent } from '../planning-activity/planning-activit
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlanningDayComponent {
-  @Input()
-  public dayPlan: DayPlan | null = null;
+  public readonly dayPlan = input(null, {
+    transform: (value: DayPlan) => {
+      if (!value) {
+        return null;
+      }
+      return {
+        ...value,
+        activities: value.activities
+          ? value.activities.sort(
+              (a, b) => a.startTime.getTime() - b.startTime.getTime(),
+            )
+          : [],
+      };
+    },
+  });
 }

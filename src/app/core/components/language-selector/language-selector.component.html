@@ -1,11 +1,11 @@
 <button mat-flat-button [matMenuTriggerFor]="menu" class="text-sm transform-7">
-  {{ selectedLanguage() }}
+  {{ selectedLocale() }}
 </button>
 <mat-menu #menu="matMenu">
-  <button mat-menu-item (click)="selectLanguage('FR')">
+  <button mat-menu-item (click)="selectLocale('fr-FR')">
     <span>FR</span>
   </button>
-  <button mat-menu-item (click)="selectLanguage('EN')">
+  <button mat-menu-item (click)="selectLocale('en-GB')">
     <span>EN</span>
   </button>
 </mat-menu>

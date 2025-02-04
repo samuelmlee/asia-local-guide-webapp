@@ -1,3 +1,4 @@
+import { formatDate } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoggerService } from '../../../../core/services/logger.service';
@@ -49,8 +50,9 @@ export class PlanningComponent {
     try {
       const searchRequestDTO: SearchRequestDTO = {
         destinationId: request.destination.destinationId,
-        startDate: request.startDate?.toLocaleDateString() ?? '',
-        endDate: request.endDate?.toLocaleDateString() ?? '',
+        // Locale for date format is independent of the user's locale
+        startDate: formatDate(request.startDate ?? '', 'yyyy-MM-dd', 'en-GB'),
+        endDate: formatDate(request.endDate ?? '', 'yyyy-MM-dd', 'en-GB'),
         activityTagIds: request.activities.map((activity) => activity.id),
       };
 
