@@ -1,17 +1,19 @@
-@if (dayPlan()) {
-  <hr class="h-px divide-gray-400 my-4" />
+<div class="mb-4">
+  @if (dayPlan()) {
+    <hr class="h-px divide-gray-400 my-4" />
 
-  <div class="text-base text-center">
-    <b>
-      {{ dayPlan()?.date | date }}
-    </b>
-  </div>
+    <div class="text-base text-center">
+      <b>
+        {{ dayPlan()?.date | date }}
+      </b>
+    </div>
 
-  @for (dayActivity of dayPlan()?.activities; track dayActivity.startTime) {
-    @if (dayActivity) {
-      <app-planning-activity
-        [dayActivity]="dayActivity"
-      ></app-planning-activity>
+    @for (dayActivity of dayPlan()?.activities; track dayActivity.startTime) {
+      @if (dayActivity) {
+        <app-planning-activity
+          [dayActivity]="dayActivity"
+        ></app-planning-activity>
+      }
     }
   }
-}
+</div>
