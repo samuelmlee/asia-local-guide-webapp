@@ -11,7 +11,7 @@ import { MatMenuModule } from '@angular/material/menu';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LanguageSelectorComponent {
-  public selectedLocale = signal('en-GB');
+  public selectedLocale = signal('EN');
 
   public selectLocale(language: string): void {
     this.selectedLocale.set(language);

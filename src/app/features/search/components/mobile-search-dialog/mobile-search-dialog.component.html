@@ -73,6 +73,33 @@
       ></mat-date-range-picker>
     </mat-form-field>
 
+    <div class="flex">
+      <mat-form-field class="mr-2">
+        <mat-label i18n="@@core.mobile-search-dialog.start-time"
+          >Heure de début</mat-label
+        >
+        <input
+          matInput
+          formControlName="startTime"
+          [matTimepicker]="startTimePicker"
+        />
+        <mat-timepicker-toggle [for]="startTimePicker" matSuffix />
+        <mat-timepicker interval="30m" #startTimePicker />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label i18n="@@core.mobile-search-dialog.start-time"
+          >Heure de fin</mat-label
+        >
+        <input
+          matInput
+          formControlName="endTime"
+          [matTimepicker]="endTimePicker"
+        />
+        <mat-timepicker-toggle [for]="endTimePicker" matSuffix />
+        <mat-timepicker #endTimePicker />
+      </mat-form-field>
+    </div>
+
     <mat-chip-listbox formControlName="activities" multiple class="mb-8">
       @for (tag of activityTags; track tag) {
         <mat-chip-option [value]="tag">{{ tag.name }}</mat-chip-option>

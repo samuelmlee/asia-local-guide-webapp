@@ -19,6 +19,7 @@ import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatTimepickerModule } from '@angular/material/timepicker';
 import { Router } from '@angular/router';
 import {
   debounceTime,
@@ -39,6 +40,7 @@ import { DestinationService } from '../../services/destination.service';
   imports: [
     CommonModule,
     MatDatepickerModule,
+    MatTimepickerModule,
     MatChipsModule,
     MatNativeDateModule,
     MatDialogModule,
@@ -76,6 +78,8 @@ export class MobileSearchDialogComponent implements OnInit {
     endDate: new FormControl<Date | null>(null),
     destination: new FormControl<string | Destination>(''),
     activities: new FormControl<ActivityTag[]>([]),
+    startTime: new FormControl<Date>(new Date()),
+    endTime: new FormControl<Date>(new Date()),
   });
 
   constructor(
