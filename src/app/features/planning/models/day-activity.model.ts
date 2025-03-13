@@ -13,13 +13,6 @@ export interface DayActivity {
 }
 
 export interface Image {
-  imageSource: string;
-  caption: string;
-  isCover: boolean;
-  variants: ImageVariant[];
-}
-
-export interface ImageVariant {
   height: number;
   width: number;
   url: string;

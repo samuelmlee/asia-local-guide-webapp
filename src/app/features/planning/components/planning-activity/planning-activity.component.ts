@@ -43,13 +43,13 @@ export class PlanningActivityComponent {
 
   private resolveImageUrl(dayActivity: DayActivity): void {
     // TODO: redo resolve img URL according to viewport
-    const coverImage = dayActivity.images.find((image) => image.isCover);
 
-    if (coverImage && coverImage.variants.length > 0) {
-      const lastVariant =
-        coverImage.variants.find((v) => v.width === 360 && v.height === 240) ||
-        coverImage.variants[0];
-      this.imageUrl.set(lastVariant.url);
+    if (dayActivity && dayActivity.images && dayActivity.images.length > 0) {
+      const images = dayActivity.images;
+
+      const imageVariant =
+        images.find((v) => v.width === 360 && v.height === 240) || images[0];
+      this.imageUrl.set(imageVariant.url);
     } else {
       this.imageUrl.set(null);
     }
