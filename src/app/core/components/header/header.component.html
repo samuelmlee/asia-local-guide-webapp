@@ -11,8 +11,6 @@
     class="scale-150"
     aria-label="Account menu icon"
     fontIcon="account_circle"
-    (click)="toggleSidenav()"
+    (click)="toggleSidenav.emit()"
   ></mat-icon>
 </header>
-
-<app-side-nav [toggleObs]="toggleObs"></app-side-nav>
