@@ -9,5 +9,5 @@ import { HeaderComponent } from './core/components/header/header.component';
   imports: [RouterOutlet, HeaderComponent],
 })
 export class AppComponent {
-  title = 'asia-local-guide-webapp';
+  public title = 'asia-local-guide-webapp';
 }
