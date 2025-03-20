@@ -1,9 +1,9 @@
 <div
-  class="h-14 grow flex items-center rounded-3xl bg-white border border-gray-400 border-solid"
   (click)="openSearchDialog()"
+  class="h-14 grow flex items-center rounded-3xl bg-white border border-gray-400 border-solid"
 >
   <div class="flex items-center px-4">
-    <mat-icon class="" aria-label="Search icon" fontIcon="search"></mat-icon>
+    <mat-icon aria-label="Search icon" fontIcon="search"></mat-icon>
     @if (!template) {
       <div i18n="@@core.pseudo-search.input-text" class="text-base pl-2">
         Recherche sur une destination
