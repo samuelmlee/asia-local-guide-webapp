@@ -1,1 +1,21 @@
-<app-language-selector></app-language-selector>
+<div class="flex flex-col p-4">
+  <div class="flex items-center justify-end h-10">
+    <mat-icon
+      fontIcon="close"
+      (click)="closeSidenav.emit()"
+      class="scale-150"
+    ></mat-icon>
+  </div>
+
+  <a routerLink="/login">
+    <button
+      mat-flat-button
+      i18n="@@core.sidenav-content.login"
+      class="w-full my-2"
+    >
+      Connexion / Inscription
+    </button>
+  </a>
+
+  <app-language-selector></app-language-selector>
+</div>

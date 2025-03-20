@@ -1,0 +1,9 @@
+<mat-sidenav-container class="h-full">
+  <app-header (toggleSidenav)="sidenav.toggle()"></app-header>
+
+  <router-outlet></router-outlet>
+
+  <mat-sidenav #sidenav mode="over" class="max-w-xs">
+    <app-sidenav-content (closeSidenav)="sidenav.close()"></app-sidenav-content>
+  </mat-sidenav>
+</mat-sidenav-container>
