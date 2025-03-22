@@ -24,8 +24,4 @@ import { LanguageSelectorComponent } from '../language-selector/language-selecto
 export class SidenavContentComponent {
   @Output()
   public closeSidenav = new EventEmitter<void>();
-
-  public openLogin(): void {
-    throw new Error('Method not implemented.');
-  }
 }
