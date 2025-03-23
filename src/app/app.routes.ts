@@ -24,15 +24,15 @@ export const routes: Routes = [
     ],
   },
   {
-    path: 'login',
+    path: 'auth-entry',
     component: SimpleLayoutComponent,
     children: [
       {
         path: '',
         loadComponent: () => {
-          return import('./core/components/login/login.component').then(
-            (m) => m.LoginComponent,
-          );
+          return import(
+            './features/auth/components/auth-entry/auth-entry.component'
+          ).then((m) => m.AuthEntryComponent);
         },
       },
     ],

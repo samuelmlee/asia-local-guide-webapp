@@ -14,7 +14,12 @@
     <input type="text" matInput [formControl]="emailControl" />
   </mat-form-field>
 
-  <button mat-flat-button class="w-full" i18n="@@core.login.continue">
+  <button
+    mat-flat-button
+    (click)="checkEmailAndNavigate()"
+    i18n="@@core.login.continue"
+    class="w-full"
+  >
     Continuer
   </button>
 </div>
