@@ -29,7 +29,7 @@ export class PlanningComponent {
     private readonly planningService: PlanningService,
     private readonly logger: LoggerService,
   ) {
-    const navigation = this.router.getCurrentNavigation();
+    const navigation = this.router.lastSuccessfulNavigation;
     const searchRequest: SearchRequest =
       navigation && navigation.extras.state
         ? navigation.extras.state['request']

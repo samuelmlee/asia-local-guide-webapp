@@ -37,4 +37,32 @@ export const routes: Routes = [
       },
     ],
   },
+  {
+    path: 'login',
+    component: SimpleLayoutComponent,
+    children: [
+      {
+        path: '',
+        loadComponent: () => {
+          return import(
+            './features/auth/components/login/login.component'
+          ).then((m) => m.LoginComponent);
+        },
+      },
+    ],
+  },
+  {
+    path: 'create-account',
+    component: SimpleLayoutComponent,
+    children: [
+      {
+        path: '',
+        loadComponent: () => {
+          return import(
+            './features/auth/components/create-account/create-account.component'
+          ).then((m) => m.CreateAccountComponent);
+        },
+      },
+    ],
+  },
 ];

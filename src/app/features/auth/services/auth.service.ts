@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
   Auth,
@@ -6,13 +7,28 @@ import {
   signOut,
   UserCredential,
 } from '@angular/fire/auth';
-import { from, Observable } from 'rxjs';
+import { firstValueFrom, from, Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  constructor(private firebaseAuth: Auth) {}
+  constructor(
+    private firebaseAuth: Auth,
+    private http: HttpClient,
+  ) {}
+
+  private env = environment;
+
+  public checkEmail(email: string): Promise<boolean> {
+    const emailExists = this.http.post<boolean>(
+      `${this.env.apiUrl}/auth/check-email`,
+      { email },
+    );
+
+    return firstValueFrom(emailExists);
+  }
 
   public login(email: string, password: string): Observable<UserCredential> {
     return from(signInWithEmailAndPassword(this.firebaseAuth, email, password));

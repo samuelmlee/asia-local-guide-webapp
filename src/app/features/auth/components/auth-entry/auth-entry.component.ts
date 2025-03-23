@@ -9,6 +9,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { Router } from '@angular/router';
+import { LoggerService } from '../../../../core/services/logger.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -30,7 +33,34 @@ export class AuthEntryComponent {
     Validators.email,
   ]);
 
-  public checkEmailAndNavigate(): void {
-    throw new Error('Method not implemented.');
+  constructor(
+    private authService: AuthService,
+    private logger: LoggerService,
+    private router: Router,
+  ) {}
+
+  public async checkEmailAndNavigate(): Promise<void> {
+    const email = this.emailControl.value;
+
+    if (!email) {
+      return;
+    }
+
+    try {
+      const emailExists = await this.authService.checkEmail(email);
+
+      const destination = emailExists ? 'login' : 'create-account';
+
+      this.router.navigate([`${destination}`], {
+        state: {
+          email,
+        },
+      });
+    } catch (error) {
+      this.logger.error(
+        'Error while checking userEmail for authentication',
+        error,
+      );
+    }
   }
 }
