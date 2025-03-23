@@ -9,6 +9,7 @@ import {
 } from '@angular/fire/auth';
 import { firstValueFrom, from, Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { EmailCheckResult } from '../models/email-check-result';
 
 @Injectable({
   providedIn: 'root',
@@ -21,13 +22,13 @@ export class AuthService {
 
   private env = environment;
 
-  public checkEmail(email: string): Promise<boolean> {
-    const emailExists = this.http.post<boolean>(
+  public checkEmail(email: string): Promise<EmailCheckResult> {
+    const emailCheck = this.http.post<EmailCheckResult>(
       `${this.env.apiUrl}/auth/check-email`,
       { email },
     );
 
-    return firstValueFrom(emailExists);
+    return firstValueFrom(emailCheck);
   }
 
   public login(email: string, password: string): Observable<UserCredential> {

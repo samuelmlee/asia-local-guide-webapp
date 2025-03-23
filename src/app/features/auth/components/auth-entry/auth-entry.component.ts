@@ -11,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Router } from '@angular/router';
 import { LoggerService } from '../../../../core/services/logger.service';
+import { EmailCheckResult } from '../../models/email-check-result';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -47,9 +48,11 @@ export class AuthEntryComponent {
     }
 
     try {
-      const emailExists = await this.authService.checkEmail(email);
+      const emailResult: EmailCheckResult =
+        await this.authService.checkEmail(email);
 
-      const destination = emailExists ? 'login' : 'create-account';
+      const destination =
+        emailResult && emailResult.exists ? 'login' : 'create-account';
 
       this.router.navigate([`${destination}`], {
         state: {
