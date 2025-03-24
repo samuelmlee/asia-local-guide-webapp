@@ -1,9 +1,26 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-create-account',
-  imports: [],
+  imports: [
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    RouterModule,
+  ],
   templateUrl: './create-account.component.html',
   styleUrl: './create-account.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -11,7 +28,18 @@ import { Router } from '@angular/router';
 export class CreateAccountComponent {
   public email = signal('');
 
-  constructor(private router: Router) {
+  public createAccountForm: FormGroup;
+
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+  ) {
+    this.createAccountForm = this.fb.group({
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
+      password: ['', Validators.required],
+    });
+
     const navigation = this.router.lastSuccessfulNavigation;
     const emailRoute: string =
       navigation && navigation.extras.state
@@ -19,7 +47,5 @@ export class CreateAccountComponent {
         : null;
 
     this.email.set(emailRoute);
-
-    console.log('In LoginComponent email:', emailRoute);
   }
 }

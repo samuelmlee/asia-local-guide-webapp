@@ -1,1 +1,54 @@
-<p>create-account works!</p>
+<div class="flex flex-col pt-16 px-11 gap-y-4">
+  <div class="text-base font-normal">
+    <div>{{ email() }}</div>
+    <a routerLink="/auth-entry" class="cursor-pointer hover:underline">
+      <div i18n="@@auth.create-account.user-other-email">
+        utiliser un autre email
+      </div>
+    </a>
+  </div>
+
+  <div class="text-xl font-bold">Créer votre compte</div>
+
+  <form [formGroup]="createAccountForm">
+    <div class="flex gap-x-4">
+      <mat-form-field #firstName class="flex-grow">
+        <mat-label i18n="@@auth.create-account.first-name">Prénom</mat-label>
+        <input type="text" matInput formControlName="firstName" />
+        @if (createAccountForm.get("firstName")?.hasError("required")) {
+          <mat-error i18n="@@auth.create-account.first-name-required"
+            >Le prénom est <strong>requis</strong></mat-error
+          >
+        }
+      </mat-form-field>
+
+      <mat-form-field class="flex-grow">
+        <mat-label i18n="@@auth.create-account.last-name">Nom</mat-label>
+        <input type="text" matInput formControlName="lastName" />
+        @if (createAccountForm.get("lastName")?.hasError("required")) {
+          <mat-error i18n="@@auth.create-account.last-name-required"
+            >Le nom est <strong>requis</strong></mat-error
+          >
+        }
+      </mat-form-field>
+    </div>
+
+    <mat-form-field class="w-full">
+      <mat-label i18n="@@auth.create-account.password">Mot de passe</mat-label>
+      <input type="text" matInput formControlName="password" />
+      @if (createAccountForm.get("password")?.hasError("required")) {
+        <mat-error i18n="@@auth.create-account.password-required"
+          >Le mot de passe est <strong>requis</strong></mat-error
+        >
+      }
+    </mat-form-field>
+
+    <button
+      mat-flat-button
+      class="w-full"
+      i18n="@@auth.create-account.create-account"
+    >
+      Créer un compte
+    </button>
+  </form>
+</div>
