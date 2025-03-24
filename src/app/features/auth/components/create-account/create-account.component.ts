@@ -34,12 +34,14 @@ export class CreateAccountComponent {
     private fb: FormBuilder,
     private router: Router,
   ) {
+    // Initialize createAccountForm
     this.createAccountForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
       password: ['', Validators.required],
     });
 
+    // Get email from navigation state
     const navigation = this.router.lastSuccessfulNavigation;
     const emailRoute: string =
       navigation && navigation.extras.state
@@ -47,5 +49,9 @@ export class CreateAccountComponent {
         : null;
 
     this.email.set(emailRoute);
+  }
+
+  public createAccount(): void {
+    throw new Error('Method not implemented.');
   }
 }

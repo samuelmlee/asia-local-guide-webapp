@@ -17,7 +17,7 @@
         <input type="text" matInput formControlName="firstName" />
         @if (createAccountForm.get("firstName")?.hasError("required")) {
           <mat-error i18n="@@auth.create-account.first-name-required"
-            >Le prénom est <strong>requis</strong></mat-error
+            >Prénom est <strong>requis</strong></mat-error
           >
         }
       </mat-form-field>
@@ -27,7 +27,7 @@
         <input type="text" matInput formControlName="lastName" />
         @if (createAccountForm.get("lastName")?.hasError("required")) {
           <mat-error i18n="@@auth.create-account.last-name-required"
-            >Le nom est <strong>requis</strong></mat-error
+            >Nom est <strong>requis</strong></mat-error
           >
         }
       </mat-form-field>
@@ -47,6 +47,7 @@
       mat-flat-button
       class="w-full"
       i18n="@@auth.create-account.create-account"
+      (click)="createAccount()"
     >
       Créer un compte
     </button>
