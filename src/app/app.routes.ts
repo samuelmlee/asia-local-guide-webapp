@@ -65,4 +65,18 @@ export const routes: Routes = [
       },
     ],
   },
+  {
+    path: 'account-created',
+    component: SimpleLayoutComponent,
+    children: [
+      {
+        path: '',
+        loadComponent: () => {
+          return import(
+            './features/auth/components/account-created/account-created.component'
+          ).then((m) => m.AccountCreatedComponent);
+        },
+      },
+    ],
+  },
 ];
