@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { EnvironmentInjector, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import {
   Auth,
   createUserWithEmailAndPassword,
@@ -9,7 +9,7 @@ import {
   user,
   UserCredential,
 } from '@angular/fire/auth';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import { firstValueFrom, from, map, Observable, of, switchMap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { AppUser } from '../models/app-user.model';
 import { CreateAccountRequestDTO } from '../models/create-account-request-dto.model';
@@ -26,7 +26,6 @@ export class AuthService {
   constructor(
     private firebaseAuth: Auth,
     private http: HttpClient,
-    private environmentInjector: EnvironmentInjector,
   ) {
     this.appUser$ = this.initAppUser();
   }
@@ -64,24 +63,27 @@ export class AuthService {
 
   private initAppUser(): Observable<AppUser | null> {
     return user(this.firebaseAuth).pipe(
-      map((user) => {
-        if (!user) return null;
+      switchMap((user) => {
+        if (!user) return of(null);
 
-        return {
-          uid: user.uid,
-          email: user.email || '',
-          displayName: user.displayName || '',
-          // TODO: check API to get custom claims
-          roles: [],
-          emailVerified: user.emailVerified,
-          isAnonymous: user.isAnonymous,
-          createdAt: user.metadata?.creationTime
-            ? new Date(user.metadata.creationTime)
-            : undefined,
-          lastLoginAt: user.metadata?.lastSignInTime
-            ? new Date(user.metadata.lastSignInTime)
-            : undefined,
-        };
+        // Force refresh of Id token to get roles added after account creation
+        return from(user.getIdTokenResult(true)).pipe(
+          map((token) => {
+            return {
+              uid: user.uid,
+              email: user.email || '',
+              displayName: user.displayName ?? '',
+              // Extract roles from custom claims
+              roles: (token.claims['roles'] as string[]) ?? [],
+              createdAt: user.metadata?.creationTime
+                ? new Date(user.metadata.creationTime)
+                : undefined,
+              lastLoginAt: user.metadata?.lastSignInTime
+                ? new Date(user.metadata.lastSignInTime)
+                : undefined,
+            };
+          }),
+        );
       }),
     );
   }
