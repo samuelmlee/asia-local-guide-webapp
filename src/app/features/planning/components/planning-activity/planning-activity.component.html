@@ -5,9 +5,9 @@
     >
       <div class="grow shrink basis-2/5">
         <img
-          class="rounded-l-md object-cover h-full w-full"
           src="{{ imageUrl() }}"
           alt="Activity Image"
+          class="rounded-l-md object-cover h-full w-full"
         />
       </div>
       <div class="flex flex-col grow shrink basis-3/5 pr-4 py-2">
@@ -35,7 +35,7 @@
               ? (activity.durationMinutes! / 60 | number: "1.0-0")
               : ""
           }}
-          <div class="ml-1" i18n="@@planning.planning-activity.hour">
+          <div i18n="@@planning.planning-activity.hour" class="ml-1">
             heures
           </div>
         </div>

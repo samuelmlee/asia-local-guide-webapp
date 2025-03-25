@@ -1,5 +1,5 @@
-<div class="p-6 flex flex-col density-minus-three">
-  <h6 class="text-center mb-6" i18n="@@core.mobile-search-dialog.title">
+<div class="p-6 flex flex-col">
+  <h6 i18n="@@core.mobile-search-dialog.title" class="text-center mb-6">
     Configurez votre recherche
   </h6>
 
@@ -26,9 +26,9 @@
       }
 
       <mat-autocomplete
-        class="autocomplete-80"
         #auto="matAutocomplete"
         [displayWith]="displayFn"
+        class="autocomplete-80"
       >
         @for (
           destination of filteredOptions | async;
@@ -39,7 +39,7 @@
             class="border-b border-solid border-zinc-300"
           >
             <div class="py-4 px-2 flex items-center">
-              <mat-icon class="icon-scale-40" fontSet="material-icons-outlined"
+              <mat-icon fontSet="material-icons-outlined" class="icon-scale-40"
                 >place</mat-icon
               >
               <div class="ml-4">

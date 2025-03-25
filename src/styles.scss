@@ -10,23 +10,16 @@ body {
 body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
+
+  // Waiting for user feedback before resizing mat input
+  @include mat.form-field-density(-1);
+  @include mat.icon-button-density(-1);
 }
 
 .search-dialog {
   .mat-mdc-dialog-surface {
     border-radius: 0;
   }
-}
-
-.density-minus-three {
-  @include mat.form-field-density(-3);
-  @include mat.icon-button-density(-3);
-}
-
-// Fix for matInput label not showing after density change
-.mat-mdc-text-field-wrapper:not(.mdc-text-field--outlined)
-  .mat-mdc-floating-label {
-  display: inline !important;
 }
 
 .icon-scale-40 {

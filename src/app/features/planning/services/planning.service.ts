@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { environment } from '../../../../environments/environments';
-import { SearchRequestDTO } from '../../search/models/search-request-dto.model';
+import { environment } from '../../../../environments/environment';
 import { DayPlan } from '../models/day-plan.model';
+import { PlanningRequestDTO } from '../models/planning-request-dto.model';
 
 @Injectable()
 export class PlanningService {
@@ -12,7 +12,7 @@ export class PlanningService {
   constructor(private readonly http: HttpClient) {}
 
   public async getDayPlansForRequest(
-    request: SearchRequestDTO,
+    request: PlanningRequestDTO,
   ): Promise<DayPlan[]> {
     const calendarDays$ = this.http.post<DayPlan[]>(
       `${this.env.apiUrl}/planning/generate`,

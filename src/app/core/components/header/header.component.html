@@ -1,19 +1,16 @@
-<header class="h-14 p-2 flex items-center justify-between relative">
+<header class="h-14 py-2 px-4 flex items-center justify-between relative">
   <mat-icon aria-label="App menu icon" fontIcon="menu"></mat-icon>
 
-  <div class="absolute left-0 right-0 flex justify-center">
-    <img
-      class="max-w-14 h-auto"
-      src="assets/images/Asia_Local_Guide.png"
-      alt="Logo"
-    />
-  </div>
+  <img
+    src="assets/images/Asia_Local_Guide.png"
+    alt="Logo"
+    class="max-w-14 h-auto"
+  />
 
-  <div class="flex items-center">
-    <app-language-selector></app-language-selector>
-    <mat-icon
-      aria-label="Account menu icon"
-      fontIcon="account_circle"
-    ></mat-icon>
-  </div>
+  <mat-icon
+    aria-label="Account menu icon"
+    fontIcon="account_circle"
+    (click)="toggleSidenav.emit()"
+    class="scale-150"
+  ></mat-icon>
 </header>

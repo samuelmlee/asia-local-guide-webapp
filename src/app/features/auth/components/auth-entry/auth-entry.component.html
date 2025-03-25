@@ -1,0 +1,38 @@
+<div class="mt-16 mx-6 flex flex-col items-center">
+  <div class="h-24 flex justify-center items-center">
+    <mat-icon fontIcon="touch_app" class="touch-icon"></mat-icon>
+  </div>
+  <div i18n="@@auth.auth-entry.conect-and-explore" class="text-xl font-bold">
+    Se connecter et explorer
+  </div>
+  <div
+    i18n="@@auth.auth-entry.create-account"
+    class="my-4 text-base font-normal"
+  >
+    Connectez-vous à votre compte à l'aide de votre email ou créez votre compte.
+    Rapide et facile !
+  </div>
+  <mat-form-field class="w-full my-4">
+    <mat-label>Email</mat-label>
+    <input type="text" matInput [formControl]="emailControl" />
+    @if (emailControl.hasError("email") && !emailControl.hasError("required")) {
+      <mat-error i18n="@@auth.auth-entry.enter-valid-email"
+        >Veuillez saisir une adresse e-mail valide</mat-error
+      >
+    }
+    @if (emailControl.hasError("required")) {
+      <mat-error i18n="@@auth.auth-entry.email-required"
+        >L'Email est <strong>requis</strong></mat-error
+      >
+    }
+  </mat-form-field>
+
+  <button
+    mat-flat-button
+    (click)="checkEmailAndNavigate()"
+    i18n="@@auth.auth-entry.continue"
+    class="w-full"
+  >
+    Continuer
+  </button>
+</div>

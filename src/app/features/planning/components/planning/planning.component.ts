@@ -3,9 +3,9 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoggerService } from '../../../../core/services/logger.service';
 import { ResponsiveSearchComponent } from '../../../search/components/responsive-search/responsive-search.component';
-import { SearchRequestDTO } from '../../../search/models/search-request-dto.model';
 import { SearchRequest } from '../../../search/models/search-request.model';
 import { DayPlan } from '../../models/day-plan.model';
+import { PlanningRequestDTO } from '../../models/planning-request-dto.model';
 import { PlanningService } from '../../services/planning.service';
 import { PlanningDayComponent } from '../planning-day/planning-day.component';
 
@@ -29,7 +29,7 @@ export class PlanningComponent {
     private readonly planningService: PlanningService,
     private readonly logger: LoggerService,
   ) {
-    const navigation = this.router.getCurrentNavigation();
+    const navigation = this.router.lastSuccessfulNavigation;
     const searchRequest: SearchRequest =
       navigation && navigation.extras.state
         ? navigation.extras.state['request']
@@ -42,13 +42,11 @@ export class PlanningComponent {
     this.date.set(formattedDate);
 
     this.getDayPlans(searchRequest);
-
-    console.log('DayPlans:', this.dayPlans());
   }
 
   private async getDayPlans(request: SearchRequest): Promise<void> {
     try {
-      const searchRequestDTO: SearchRequestDTO = {
+      const planningRequestDTO: PlanningRequestDTO = {
         destinationId: request.destination.destinationId,
         // Locale for date format is independent of the user's locale
         startDate: formatDate(request.startDate ?? '', 'yyyy-MM-dd', 'en-GB'),
@@ -56,10 +54,10 @@ export class PlanningComponent {
         activityTagIds: request.activities.map((activity) => activity.id),
       };
 
-      this.validateSearchRequestDTO(searchRequestDTO);
+      this.validatePlanningRequestDTO(planningRequestDTO);
 
       const dayPlans: DayPlan[] =
-        await this.planningService.getDayPlansForRequest(searchRequestDTO);
+        await this.planningService.getDayPlansForRequest(planningRequestDTO);
 
       this.dayPlans.set(dayPlans);
 
@@ -72,11 +70,11 @@ export class PlanningComponent {
     }
   }
 
-  private validateSearchRequestDTO(dto: SearchRequestDTO): void {
+  private validatePlanningRequestDTO(dto: PlanningRequestDTO): void {
     const invalidProperties = Object.keys(dto).filter(
       (key: string) =>
-        dto[key as keyof SearchRequestDTO] === null ||
-        dto[key as keyof SearchRequestDTO] === undefined,
+        dto[key as keyof PlanningRequestDTO] === null ||
+        dto[key as keyof PlanningRequestDTO] === undefined,
     );
 
     if (invalidProperties.length > 0) {
