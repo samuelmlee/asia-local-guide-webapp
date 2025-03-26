@@ -11,12 +11,11 @@ import { Router } from '@angular/router';
 export class LoginComponent {
   public email = signal('');
 
-  constructor(private router: Router) {
+  constructor(private readonly router: Router) {
     const navigation = this.router.lastSuccessfulNavigation;
-    const emailRoute: string =
-      navigation && navigation.extras.state
-        ? navigation.extras.state['email']
-        : null;
+    const emailRoute: string = navigation?.extras?.state
+      ? navigation.extras.state['email']
+      : null;
 
     this.email.set(emailRoute);
 

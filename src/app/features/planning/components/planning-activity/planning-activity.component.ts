@@ -30,7 +30,7 @@ export class PlanningActivityComponent {
 
   public readonly imageUrl = signal<string | null>(null);
 
-  constructor(private logger: LoggerService) {}
+  constructor(private readonly logger: LoggerService) {}
 
   public navigateToProvider(activity: DayActivity): void {
     if (!activity || !activity.providerUrl) {
@@ -44,7 +44,7 @@ export class PlanningActivityComponent {
   private resolveImageUrl(dayActivity: DayActivity): void {
     // TODO: redo resolve img URL according to viewport
 
-    if (dayActivity && dayActivity.images && dayActivity.images.length > 0) {
+    if (dayActivity?.images && dayActivity.images.length > 0) {
       const images = dayActivity.images;
 
       const imageVariant =

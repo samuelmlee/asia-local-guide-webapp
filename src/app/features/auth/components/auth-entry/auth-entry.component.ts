@@ -35,9 +35,9 @@ export class AuthEntryComponent {
   ]);
 
   constructor(
-    private authService: AuthService,
-    private logger: LoggerService,
-    private router: Router,
+    private readonly authService: AuthService,
+    private readonly logger: LoggerService,
+    private readonly router: Router,
   ) {}
 
   public async checkEmailAndNavigate(): Promise<void> {

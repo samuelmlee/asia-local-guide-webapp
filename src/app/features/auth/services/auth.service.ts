@@ -19,13 +19,13 @@ import { EmailCheckResult } from '../models/email-check-result';
   providedIn: 'root',
 })
 export class AuthService {
-  private env = environment;
+  private readonly env = environment;
 
   public appUser$: Observable<AppUser | null>;
 
   constructor(
-    private firebaseAuth: Auth,
-    private http: HttpClient,
+    private readonly firebaseAuth: Auth,
+    private readonly http: HttpClient,
   ) {
     this.appUser$ = this.initAppUser();
   }

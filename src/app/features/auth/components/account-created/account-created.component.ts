@@ -14,7 +14,7 @@ import { AuthService } from '../../services/auth.service';
 export class AccountCreatedComponent {
   public appUser: Signal<AppUser | null | undefined>;
 
-  constructor(private authService: AuthService) {
+  constructor(private readonly authService: AuthService) {
     this.appUser = toSignal(this.authService.appUser$);
   }
 }
