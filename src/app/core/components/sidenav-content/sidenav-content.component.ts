@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
@@ -22,6 +17,5 @@ import { LanguageSelectorComponent } from '../language-selector/language-selecto
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SidenavContentComponent {
-  @Output()
-  public closeSidenav = new EventEmitter<void>();
+  public readonly closeSidenav = output<void>();
 }

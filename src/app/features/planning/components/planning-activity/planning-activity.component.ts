@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
+  input,
   signal,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,15 +18,15 @@ import { DayActivity } from '../../models/day-activity.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlanningActivityComponent {
-  @Input()
-  set dayActivity(dayActivity: DayActivity) {
-    if (dayActivity) {
-      this.resolveImageUrl(dayActivity);
-      this.activity.set(dayActivity);
-    }
-  }
-
-  public readonly activity = signal<DayActivity | null>(null);
+  public dayActivity = input(null, {
+    transform: (activity: DayActivity | null) => {
+      if (activity) {
+        this.resolveImageUrl(activity);
+        return activity;
+      }
+      return null;
+    },
+  });
 
   public readonly imageUrl = signal<string | null>(null);
 

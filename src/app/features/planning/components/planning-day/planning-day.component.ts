@@ -11,7 +11,7 @@ import { PlanningActivityComponent } from '../planning-activity/planning-activit
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlanningDayComponent {
-  public readonly dayPlan = input(null, {
+  public dayPlan = input(null, {
     transform: (value: DayPlan) => {
       if (!value) {
         return null;
@@ -20,7 +20,7 @@ export class PlanningDayComponent {
         ...value,
         activities: value.activities
           ? value.activities.sort(
-              (a, b) => a.startTime.getTime() - b.startTime.getTime(),
+              (a, b) => a.startTime.getTime() - b.startTime.getTime()
             )
           : [],
       };

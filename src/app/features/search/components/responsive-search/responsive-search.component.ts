@@ -2,7 +2,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
+  input,
   TemplateRef,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -19,8 +19,7 @@ import { MobileSearchDialogComponent } from '../mobile-search-dialog/mobile-sear
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ResponsiveSearchComponent {
-  @Input()
-  public template: TemplateRef<unknown> | null = null;
+  public template = input<TemplateRef<unknown> | null>(null);
 
   constructor(private readonly dialog: MatDialog) {}
 
