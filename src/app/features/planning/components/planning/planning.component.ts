@@ -2,6 +2,7 @@ import { formatDate } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoggerService } from '../../../../core/services/logger.service';
+import { validateModel } from '../../../../core/utils/validation-utils';
 import { ResponsiveSearchComponent } from '../../../search/components/responsive-search/responsive-search.component';
 import { SearchRequest } from '../../../search/models/search-request.model';
 import { DayPlan } from '../../models/day-plan.model';
@@ -54,7 +55,7 @@ export class PlanningComponent {
         activityTagIds: request.activities.map((activity) => activity.id),
       };
 
-      this.validatePlanningRequestDTO(planningRequestDTO);
+      validateModel(planningRequestDTO);
 
       const dayPlans: DayPlan[] =
         await this.planningService.getDayPlansForRequest(planningRequestDTO);
@@ -67,20 +68,6 @@ export class PlanningComponent {
     } catch (error) {
       this.logger.error('Error while fetching DayPlans', error);
       this.dayPlans.set([]);
-    }
-  }
-
-  private validatePlanningRequestDTO(dto: PlanningRequestDTO): void {
-    const invalidProperties = Object.keys(dto).filter(
-      (key: string) =>
-        dto[key as keyof PlanningRequestDTO] === null ||
-        dto[key as keyof PlanningRequestDTO] === undefined,
-    );
-
-    if (invalidProperties.length > 0) {
-      throw new Error(
-        `Validation failed. Missing or invalid properties: ${invalidProperties.join(', ')}`,
-      );
     }
   }
 }
