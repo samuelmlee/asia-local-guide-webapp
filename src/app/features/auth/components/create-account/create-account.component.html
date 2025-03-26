@@ -15,7 +15,7 @@
       <mat-form-field #firstName class="flex-grow">
         <mat-label i18n="@@auth.create-account.first-name">Prénom</mat-label>
         <input type="text" matInput formControlName="firstName" />
-        @if (createAccountForm.get("firstName")?.hasError("required")) {
+        @if (createAccountForm.get('firstName')?.hasError('required')) {
           <mat-error i18n="@@auth.create-account.first-name-required"
             >Prénom est <strong>requis</strong></mat-error
           >
@@ -25,7 +25,7 @@
       <mat-form-field class="flex-grow">
         <mat-label i18n="@@auth.create-account.last-name">Nom</mat-label>
         <input type="text" matInput formControlName="lastName" />
-        @if (createAccountForm.get("lastName")?.hasError("required")) {
+        @if (createAccountForm.get('lastName')?.hasError('required')) {
           <mat-error i18n="@@auth.create-account.last-name-required"
             >Nom est <strong>requis</strong></mat-error
           >
@@ -36,7 +36,7 @@
     <mat-form-field class="w-full">
       <mat-label i18n="@@auth.create-account.password">Mot de passe</mat-label>
       <input type="password" matInput formControlName="password" />
-      @if (createAccountForm.get("password")?.hasError("required")) {
+      @if (createAccountForm.get('password')?.hasError('required')) {
         <mat-error i18n="@@auth.create-account.password-required"
           >Mot de passe est <strong>requis</strong></mat-error
         >

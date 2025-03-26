@@ -70,7 +70,7 @@ export class MobileSearchDialogComponent implements OnInit {
     { id: 21911, name: 'Gastronomie' },
     { id: 21909, name: 'Activités sportives' },
     { id: 21916, name: 'Évènements' },
-    { id: 21612, name: 'Visites guidées' },
+    { id: 21912, name: 'Tickets et passes' },
   ];
 
   public readonly searchForm = new FormGroup({
@@ -86,7 +86,7 @@ export class MobileSearchDialogComponent implements OnInit {
     private readonly destinationService: DestinationService,
     private readonly router: Router,
     private readonly dialogRef: MatDialogRef<MobileSearchDialogComponent>,
-    private readonly logger: LoggerService,
+    private readonly logger: LoggerService
   ) {}
 
   public ngOnInit(): void {
@@ -99,7 +99,7 @@ export class MobileSearchDialogComponent implements OnInit {
         switchMap((value) => {
           const query = typeof value === 'string' ? value : '';
           return query ? this._filter(query as string) : of([]);
-        }),
+        })
       );
   }
 
