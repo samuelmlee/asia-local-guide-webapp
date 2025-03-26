@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import {
   Auth,
   createUserWithEmailAndPassword,
@@ -26,6 +26,7 @@ export class AuthService {
   constructor(
     private readonly firebaseAuth: Auth,
     private readonly http: HttpClient,
+    private readonly ngZone: NgZone
   ) {
     this.appUser$ = this.initAppUser();
   }
@@ -33,32 +34,36 @@ export class AuthService {
   public checkEmail(email: string): Promise<EmailCheckResult> {
     const emailCheck = this.http.post<EmailCheckResult>(
       `${this.env.apiUrl}/auth/check-email`,
-      { email },
+      { email }
     );
 
     return firstValueFrom(emailCheck);
   }
 
   public login(email: string, password: string): Promise<UserCredential> {
-    return signInWithEmailAndPassword(this.firebaseAuth, email, password);
+    return this.ngZone.run(() =>
+      signInWithEmailAndPassword(this.firebaseAuth, email, password)
+    );
   }
 
   public register(
-    dto: CreateAccountRequestDTO,
+    dto: CreateAccountRequestDTO
   ): Promise<UserCredential | void> {
-    return createUserWithEmailAndPassword(
-      this.firebaseAuth,
-      dto.email,
-      dto.password,
-    ).then((response) =>
-      updateProfile(response.user, {
-        displayName: `${dto.firstName} ${dto.lastName}`,
-      }),
+    return this.ngZone.run(() =>
+      createUserWithEmailAndPassword(
+        this.firebaseAuth,
+        dto.email,
+        dto.password
+      ).then((response) =>
+        updateProfile(response.user, {
+          displayName: `${dto.firstName} ${dto.lastName}`,
+        })
+      )
     );
   }
 
   public logout(): Promise<void> {
-    return signOut(this.firebaseAuth);
+    return this.ngZone.run(() => signOut(this.firebaseAuth));
   }
 
   private initAppUser(): Observable<AppUser | null> {
@@ -82,9 +87,9 @@ export class AuthService {
                 ? new Date(user.metadata.lastSignInTime)
                 : undefined,
             };
-          }),
+          })
         );
-      }),
+      })
     );
   }
 }

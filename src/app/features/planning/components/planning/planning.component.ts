@@ -1,5 +1,10 @@
 import { formatDate } from '@angular/common';
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  signal,
+  TemplateRef,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { LoggerService } from '../../../../core/services/logger.service';
 import { validateModel } from '../../../../core/utils/validation-utils';
@@ -25,10 +30,12 @@ export class PlanningComponent {
 
   public readonly dayPlans = signal<DayPlan[]>([]);
 
+  public resultTemplate!: TemplateRef<unknown>;
+
   constructor(
     private readonly router: Router,
     private readonly planningService: PlanningService,
-    private readonly logger: LoggerService,
+    private readonly logger: LoggerService
   ) {
     const navigation = this.router.lastSuccessfulNavigation;
     const searchRequest: SearchRequest =

@@ -1,4 +1,4 @@
-@if (activity(); as activity) {
+@if (dayActivity(); as activity) {
   <div class="h-64 pt-2 px-4 text-base font-normal">
     <div
       class="h-full flex gap-4 rounded-md border border-solid border-zinc-300"
@@ -16,7 +16,7 @@
             fontIcon="star"
             class="rating-icon text-emerald-600"
           ></mat-icon>
-          {{ activity.combinedAverageRating | number: "1.0-0" }} ({{
+          {{ activity.combinedAverageRating | number: '1.0-0' }} ({{
             activity.reviewCount
           }})
         </div>
@@ -32,8 +32,8 @@
           ></mat-icon>
           {{
             activity.durationMinutes
-              ? (activity.durationMinutes! / 60 | number: "1.0-0")
-              : ""
+              ? (activity.durationMinutes! / 60 | number: '1.0-0')
+              : ''
           }}
           <div i18n="@@planning.planning-activity.hour" class="ml-1">
             heures
@@ -47,8 +47,8 @@
         </div>
         <div class="flex items-center justify-between">
           <b>
-            {{ activity.startTime | date: "shortTime" }} -
-            {{ activity.endTime | date: "shortTime" }}
+            {{ activity.startTime | date: 'shortTime' }} -
+            {{ activity.endTime | date: 'shortTime' }}
           </b>
           <button
             i18n="@@planning.planning-activity.book"

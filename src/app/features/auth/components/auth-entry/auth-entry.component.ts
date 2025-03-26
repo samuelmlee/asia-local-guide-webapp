@@ -51,8 +51,7 @@ export class AuthEntryComponent {
       const emailResult: EmailCheckResult =
         await this.authService.checkEmail(email);
 
-      const destination =
-        emailResult && emailResult.exists ? 'login' : 'create-account';
+      const destination = emailResult?.exists ? 'login' : 'create-account';
 
       this.router.navigate([`${destination}`], {
         state: {
