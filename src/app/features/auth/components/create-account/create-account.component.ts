@@ -11,6 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { Router, RouterModule } from '@angular/router';
 import { LoggerService } from '../../../../core/services/logger.service';
+import { validateModel } from '../../../../core/utils/validation-utils';
 import { CreateAccountRequestDTO } from '../../models/create-account-request-dto.model';
 import { AuthService } from '../../services/auth.service';
 
@@ -63,27 +64,13 @@ export class CreateAccountComponent {
         email: this.email(),
       };
 
-      this.validateFormData(createAccountDTO);
+      validateModel(createAccountDTO);
 
       await this.authService.register(createAccountDTO);
 
       this.router.navigate(['/account-created']);
     } catch (error) {
       this.logger.error('Error during account creation', error);
-    }
-  }
-
-  private validateFormData(dto: CreateAccountRequestDTO): void {
-    const invalidProperties = Object.keys(dto).filter(
-      (key: string) =>
-        dto[key as keyof CreateAccountRequestDTO] === null ||
-        dto[key as keyof CreateAccountRequestDTO] === undefined,
-    );
-
-    if (invalidProperties.length > 0) {
-      throw new Error(
-        `Validation failed. Missing or invalid properties: ${invalidProperties.join(', ')}`,
-      );
     }
   }
 }
