@@ -69,7 +69,7 @@ export class MobileSearchDialogComponent implements OnInit {
     { id: 21910, name: 'Art et culture' },
     { id: 21911, name: 'Gastronomie' },
     { id: 21909, name: 'Activités sportives' },
-    { id: 21916, name: 'Évènements' },
+    { id: 21915, name: 'Cours et ateliers' },
     { id: 21912, name: 'Tickets et passes' },
   ];
 
