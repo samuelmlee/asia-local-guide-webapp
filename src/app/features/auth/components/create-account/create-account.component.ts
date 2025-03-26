@@ -35,10 +35,10 @@ export class CreateAccountComponent {
   public createAccountForm: FormGroup;
 
   constructor(
-    private authService: AuthService,
-    private fb: FormBuilder,
-    private router: Router,
-    private logger: LoggerService,
+    private readonly authService: AuthService,
+    private readonly fb: FormBuilder,
+    private readonly router: Router,
+    private readonly logger: LoggerService,
   ) {
     // Initialize createAccountForm
     this.createAccountForm = this.fb.group({
@@ -49,10 +49,9 @@ export class CreateAccountComponent {
 
     // Get email from navigation state
     const navigation = this.router.lastSuccessfulNavigation;
-    const emailRoute: string =
-      navigation && navigation.extras.state
-        ? navigation.extras.state['email']
-        : null;
+    const emailRoute: string = navigation?.extras?.state
+      ? navigation.extras.state['email']
+      : null;
 
     this.email.set(emailRoute);
   }
