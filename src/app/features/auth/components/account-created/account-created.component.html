@@ -32,30 +32,28 @@
         Choisissez jusqu'à 2 options.
       </div>
 
-      <div class="large-mat-chip">
-        <mat-chip-listbox>
-          <mat-chip-option>
-            <mat-icon matChipAvatar fontIcon="museum"></mat-icon>
-            Test that gets really long to display
+      @if (errorMessage()) {
+        <div class="my-4 text-base font-normal text-red-700">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <mat-chip-listbox #chipList class="large-mat-chip my-4" [multiple]="true">
+        @for (tag of activityTags(); track tag.id) {
+          <mat-chip-option
+            #matChip
+            [value]="tag.id"
+            [selectable]="matChip.selected || chipList.value?.length < 2"
+          >
+            <mat-icon matChipAvatar [fontIcon]="tag.fontIcon"></mat-icon>
+            {{ tag.promptText }}
           </mat-chip-option>
-          <mat-chip-option>
-            <mat-icon matChipAvatar fontIcon="dinner_dining"></mat-icon>
-            Test
-          </mat-chip-option>
-          <mat-chip-option>
-            <mat-icon matChipAvatar fontIcon="barefoot"></mat-icon>
-            Test
-          </mat-chip-option>
-          <mat-chip-option>
-            <mat-icon matChipAvatar fontIcon="barefoot"></mat-icon>
-            Test
-          </mat-chip-option>
-        </mat-chip-listbox>
-      </div>
+        }
+      </mat-chip-listbox>
 
       <button
         mat-flat-button
-        (click)="savePreferences()"
+        (click)="finishOnboarding()"
         i18n="@@auth.auth-entry.continue"
         class="w-full"
       >

@@ -1,4 +1,4 @@
-import { ActivityTag } from './activity-tag.model';
+import { ActivityTag } from '../../../core/models/activity-tag.model';
 import { Destination } from './destination.model';
 
 export interface SearchRequest {

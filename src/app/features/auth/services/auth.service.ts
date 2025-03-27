@@ -68,29 +68,31 @@ export class AuthService {
   }
 
   private initAppUser(): Signal<AppUser | null | undefined> {
-    const appUser$ = user(this.firebaseAuth).pipe(
-      switchMap((user) => {
-        if (!user) return of(null);
+    const appUser$ = this.ngZone.run(() =>
+      user(this.firebaseAuth).pipe(
+        switchMap((user) => {
+          if (!user) return of(null);
 
-        // Force refresh of Id token to get roles added after account creation
-        return from(user.getIdTokenResult(true)).pipe(
-          map((token) => {
-            return {
-              uid: user.uid,
-              email: user.email ?? '',
-              displayName: user.displayName ?? '',
-              // Extract roles from custom claims
-              roles: (token.claims['roles'] as string[]) ?? [],
-              createdAt: user.metadata?.creationTime
-                ? new Date(user.metadata.creationTime)
-                : undefined,
-              lastLoginAt: user.metadata?.lastSignInTime
-                ? new Date(user.metadata.lastSignInTime)
-                : undefined,
-            };
-          })
-        );
-      })
+          // Force refresh of Id token to get roles added by Firebase after account creation
+          return from(user.getIdTokenResult(true)).pipe(
+            map((token) => {
+              return {
+                uid: user.uid,
+                email: user.email ?? '',
+                displayName: user.displayName ?? '',
+                // Extract roles from custom claims
+                roles: (token.claims['roles'] as string[]) ?? [],
+                createdAt: user.metadata?.creationTime
+                  ? new Date(user.metadata.creationTime)
+                  : undefined,
+                lastLoginAt: user.metadata?.lastSignInTime
+                  ? new Date(user.metadata.lastSignInTime)
+                  : undefined,
+              };
+            })
+          );
+        })
+      )
     );
 
     return toSignal(appUser$);
