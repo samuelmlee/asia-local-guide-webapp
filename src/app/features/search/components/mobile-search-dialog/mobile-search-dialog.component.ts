@@ -29,8 +29,8 @@ import {
   startWith,
   switchMap,
 } from 'rxjs';
+import { ActivityTag } from '../../../../core/models/activity-tag.model';
 import { LoggerService } from '../../../../core/services/logger.service';
-import { ActivityTag } from '../../../../features/search/models/activity-tag.model';
 import { Destination } from '../../../../features/search/models/destination.model';
 import { SearchRequest } from '../../../../features/search/models/search-request.model';
 import { DestinationService } from '../../services/destination.service';
@@ -66,11 +66,11 @@ export class MobileSearchDialogComponent implements OnInit {
   public filteredOptions: Observable<Destination[]> | undefined;
 
   public activityTags: ActivityTag[] = [
-    { id: 21910, name: 'Art et culture' },
-    { id: 21911, name: 'Gastronomie' },
-    { id: 21909, name: 'Activités sportives' },
-    { id: 21916, name: 'Évènements' },
-    { id: 21612, name: 'Visites guidées' },
+    { id: 21910, name: 'Art et culture', promptText: '' },
+    { id: 21911, name: 'Gastronomie', promptText: '' },
+    { id: 21909, name: 'Activités sportives', promptText: '' },
+    { id: 21915, name: 'Cours et ateliers', promptText: '' },
+    { id: 21912, name: 'Tickets et passes', promptText: '' },
   ];
 
   public readonly searchForm = new FormGroup({
@@ -86,7 +86,7 @@ export class MobileSearchDialogComponent implements OnInit {
     private readonly destinationService: DestinationService,
     private readonly router: Router,
     private readonly dialogRef: MatDialogRef<MobileSearchDialogComponent>,
-    private readonly logger: LoggerService,
+    private readonly logger: LoggerService
   ) {}
 
   public ngOnInit(): void {
@@ -99,7 +99,7 @@ export class MobileSearchDialogComponent implements OnInit {
         switchMap((value) => {
           const query = typeof value === 'string' ? value : '';
           return query ? this._filter(query as string) : of([]);
-        }),
+        })
       );
   }
 

@@ -1,4 +1,4 @@
-@use "@angular/material" as mat;
+@use '@angular/material' as mat;
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,11 +9,28 @@ body {
 }
 body {
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
 
-  // Waiting for user feedback before resizing mat input
+  // Waiting for user feedback before resizing mat input for application
   @include mat.form-field-density(-1);
   @include mat.icon-button-density(-1);
+}
+
+.large-mat-chip {
+  @include mat.chips-overrides(
+    (
+      outline-color: transparent,
+      with-icon-icon-size: 4rem,
+      with-avatar-avatar-size: 4rem,
+      container-height: 6rem,
+    )
+  );
+
+  // CSS for mat chip text wrapping
+  .mat-mdc-chip-action-label {
+    max-width: 4rem;
+    text-wrap: auto;
+  }
 }
 
 .search-dialog {

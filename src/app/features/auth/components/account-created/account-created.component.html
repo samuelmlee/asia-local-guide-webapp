@@ -1,1 +1,64 @@
-<div>{{ appUser() | json }}</div>
+<div class="flex flex-col">
+  <div class="mx-6 flex flex-col items-center text-center">
+    <div class="mt-16">
+      <div
+        i18n="@@auth.account-created.welcome-asia-local-guide"
+        class="text-xl font-bold"
+      >
+        Bievenue sur Asia Local Guide !
+      </div>
+      <div
+        i18n="@@auth.account-created.survey-message"
+        class="my-4 text-base font-normal"
+      >
+        Faisons connaissance. Saisissez les informations ci-dessous pour obtenir
+        de meilleures recommandations.
+      </div>
+    </div>
+  </div>
+
+  <div class="flex-grow flex flex-col items-center text-center bg-gray-300">
+    <div class="mx-6 mt-16">
+      <div
+        i18n="@@auth.account-created.favorite-activity"
+        class="text-xl font-bold"
+      >
+        Quelles est votre activité préférée ?
+      </div>
+      <div
+        i18n="@@auth.account-created.choose-options"
+        class="my-4 text-base font-normal"
+      >
+        Choisissez jusqu'à 2 options.
+      </div>
+
+      @if (errorMessage()) {
+        <div class="my-4 text-base font-normal text-red-700">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <mat-chip-listbox #chipList class="large-mat-chip my-4" [multiple]="true">
+        @for (tag of activityTags(); track tag.id) {
+          <mat-chip-option
+            #matChip
+            [value]="tag.id"
+            [selectable]="matChip.selected || chipList.value?.length < 2"
+          >
+            <mat-icon matChipAvatar [fontIcon]="tag.fontIcon"></mat-icon>
+            {{ tag.promptText }}
+          </mat-chip-option>
+        }
+      </mat-chip-listbox>
+
+      <button
+        mat-flat-button
+        (click)="finishOnboarding()"
+        i18n="@@auth.auth-entry.continue"
+        class="w-full"
+      >
+        Continuer
+      </button>
+    </div>
+  </div>
+</div>
