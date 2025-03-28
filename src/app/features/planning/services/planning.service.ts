@@ -2,6 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { AppError, isAppError } from '../../../core/models/app-error.model';
+import { ErrorType } from '../../../core/models/error-type.enum';
 import { formateDateToYMD as formatDateToYMD } from '../../../core/utils/date-utils';
 import { validateModel } from '../../../core/utils/validation-utils';
 import { SearchRequest } from '../../search/models/search-request.model';
@@ -19,8 +21,12 @@ export class PlanningService {
 
   public async getDayPlansForRequest(request: SearchRequest): Promise<void> {
     if (!request) {
-      throw new Error('Search request is required');
+      throw this.createAppError(
+        ErrorType.VALIDATION,
+        'Search request is required'
+      );
     }
+
     const planningRequestDTO: PlanningRequestDTO = {
       destinationId: request.destination.destinationId,
       startDate: formatDateToYMD(request.startDate),
@@ -28,14 +34,34 @@ export class PlanningService {
       activityTagIds: request.activities.map((activity) => activity.id),
     };
 
-    validateModel(planningRequestDTO);
+    try {
+      validateModel(planningRequestDTO);
+    } catch (validationError) {
+      throw this.createAppError(
+        ErrorType.VALIDATION,
+        (validationError as Error).message,
+        validationError
+      );
+    }
 
-    await this.fetchPlanningData(
-      planningRequestDTO,
-      request.destination.name,
-      request.startDate!,
-      request.endDate!
-    );
+    try {
+      await this.fetchPlanningData(
+        planningRequestDTO,
+        request.destination.name,
+        request.startDate!,
+        request.endDate!
+      );
+    } catch (error) {
+      const appError = isAppError(error)
+        ? error
+        : this.createAppError(
+            ErrorType.UNKNOWN,
+            'Failed to create planning',
+            error
+          );
+
+      throw appError;
+    }
   }
 
   private async fetchPlanningData(
@@ -69,5 +95,18 @@ export class PlanningService {
     };
 
     this.planning.set(planning);
+  }
+
+  // Create application errors for non-HTTP errors
+  private createAppError(
+    type: ErrorType,
+    message: string,
+    originalError?: unknown
+  ): AppError {
+    return {
+      type,
+      message,
+      originalError: originalError || new Error(message),
+    };
   }
 }

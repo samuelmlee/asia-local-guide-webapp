@@ -4,10 +4,9 @@ import {
   HttpInterceptorFn,
   HttpRequest,
 } from '@angular/common/http';
-import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
-import { LoggerService } from './logger.service';
-import { SnackbarService } from './snackbar.service';
+import { AppError } from '../models/app-error.model';
+import { ErrorType } from '../models/error-type.enum';
 
 export const httpErrorInterceptor: HttpInterceptorFn = (
   req: HttpRequest<unknown>,
@@ -15,42 +14,61 @@ export const httpErrorInterceptor: HttpInterceptorFn = (
 ) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      const logger = inject(LoggerService);
-      const snackBar = inject(SnackbarService);
+      // Create structured AppError
+      const appError: AppError = createAppError(error);
 
-      let errorMessage: string;
-
-      if (error.status === 0) {
-        // A client-side or network error occurred.
-        errorMessage =
-          'Client or Network error - please check your input or connection';
-        logger.error('Network error', error);
-      } else {
-        errorMessage = getErrorMessage(error);
-        logger.error(`API error ${error.status}`, error);
-      }
-
-      snackBar.openError(errorMessage);
-
-      // Re-throw for components to handle specific cases
-      return throwError(() => error);
+      // Return AppError for components
+      return throwError(() => appError);
     })
   );
 };
 
-const getErrorMessage = (error: HttpErrorResponse): string => {
+// TODO: use translation keys when translation service implemented
+
+function createAppError(error: HttpErrorResponse): AppError {
+  // Network or client-side error
+  if (error.status === 0) {
+    return {
+      type: ErrorType.NETWORK,
+      message: 'Unable to connect to the server. Please check your connection.',
+      originalError: error,
+    };
+  }
+
+  // Server-side errors
+  let type: ErrorType;
+  let message: string;
+
   switch (error.status) {
     case 400:
-      return 'Invalid request';
+      type = ErrorType.VALIDATION;
+      message = 'The request contains invalid data';
+      break;
     case 401:
-      return 'Please log in to continue';
+      type = ErrorType.UNAUTHORIZED;
+      message = 'You must be logged in to access this resource';
+      break;
     case 403:
-      return "You don't have permission to access this resource";
+      type = ErrorType.FORBIDDEN;
+      message = 'You do not have permission to access this resource';
+      break;
     case 404:
-      return 'Resource not found';
+      type = ErrorType.NOT_FOUND;
+      message = 'The requested resource was not found';
+      break;
     case 500:
-      return 'Server error - please try again later';
+      type = ErrorType.SERVER;
+      message = 'Something went wrong on our server';
+      break;
     default:
-      return `Error ${error.status}: ${error.message}`;
+      type = ErrorType.UNKNOWN;
+      message = `Unexpected error occurred (${error.status})`;
   }
-};
+
+  return {
+    type,
+    message,
+    statusCode: error.status,
+    originalError: error,
+  };
+}
