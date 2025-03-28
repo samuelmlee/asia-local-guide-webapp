@@ -33,6 +33,7 @@ import { LoggerService } from '../../../../core/services/logger.service';
 import { Destination } from '../../../../features/search/models/destination.model';
 import { SearchRequest } from '../../../../features/search/models/search-request.model';
 import { ActivityTag } from '../../../activity-tag/models/activity-tag.model';
+import { PlanningService } from '../../../planning/services/planning.service';
 import { DestinationService } from '../../services/destination.service';
 
 @Component({
@@ -84,6 +85,7 @@ export class MobileSearchDialogComponent implements OnInit {
 
   constructor(
     private readonly destinationService: DestinationService,
+    private readonly planningService: PlanningService,
     private readonly router: Router,
     private readonly dialogRef: MatDialogRef<MobileSearchDialogComponent>,
     private readonly logger: LoggerService
@@ -103,23 +105,29 @@ export class MobileSearchDialogComponent implements OnInit {
       );
   }
 
-  public submitSearch(): void {
+  public async submitSearch(): Promise<void> {
     if (this.searchForm.invalid) {
       return;
     }
 
     const request = this.searchForm.value as SearchRequest;
 
-    this.router.routeReuseStrategy.shouldReuseRoute = function () {
-      return false;
-    };
+    try {
+      await this.planningService.getDayPlansForRequest(request);
 
-    this.router.navigate(['/planning'], {
-      state: {
-        request,
-      },
-    });
-    this.dialogRef.close();
+      this.router.routeReuseStrategy.shouldReuseRoute = function () {
+        return false;
+      };
+
+      this.router.navigate(['/planning'], {
+        state: {
+          request,
+        },
+      });
+      this.dialogRef.close();
+    } catch (error) {
+      this.logger.error('Error while creating search request', error);
+    }
   }
 
   public displayFn(value: Destination): string {
