@@ -1,12 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 import { ActivityTag } from '../models/activity-tag.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class ActivityTagService {
   private readonly env = environment;
 

@@ -9,12 +9,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterModule } from '@angular/router';
+import { LoggerService } from '../../../../core/services/logger.service';
 import {
   ActivityTag,
   ActivityTagView,
-} from '../../../../core/models/activity-tag.model';
-import { ActivityTagService } from '../../../../core/services/activity-tag.service';
-import { LoggerService } from '../../../../core/services/logger.service';
+} from '../../../activity-tag/models/activity-tag.model';
+import { ActivityTagService } from '../../../activity-tag/services/activity-tag.service';
 import { AppUser } from '../../models/app-user.model';
 import { AuthService } from '../../services/auth.service';
 

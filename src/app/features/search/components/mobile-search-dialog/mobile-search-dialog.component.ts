@@ -29,10 +29,10 @@ import {
   startWith,
   switchMap,
 } from 'rxjs';
-import { ActivityTag } from '../../../../core/models/activity-tag.model';
 import { LoggerService } from '../../../../core/services/logger.service';
 import { Destination } from '../../../../features/search/models/destination.model';
 import { SearchRequest } from '../../../../features/search/models/search-request.model';
+import { ActivityTag } from '../../../activity-tag/models/activity-tag.model';
 import { DestinationService } from '../../services/destination.service';
 
 @Component({
