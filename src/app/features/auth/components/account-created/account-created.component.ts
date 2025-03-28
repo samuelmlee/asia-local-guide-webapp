@@ -10,6 +10,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterModule } from '@angular/router';
 import { LoggerService } from '../../../../core/services/logger.service';
+import { SnackbarService } from '../../../../core/services/snackbar.service';
 import {
   ActivityTag,
   ActivityTagView,
@@ -36,6 +37,7 @@ export class AccountCreatedComponent implements OnInit {
   constructor(
     private readonly activityTagService: ActivityTagService,
     private readonly logger: LoggerService,
+    private readonly snackbar: SnackbarService,
     private readonly router: Router,
     authService: AuthService
   ) {
@@ -50,7 +52,11 @@ export class AccountCreatedComponent implements OnInit {
     const user = this.appUser();
     if (!user) {
       this.logger.error('User is null or undefined');
+      this.snackbar.openError(
+        'Erreur lors de la sauvegarde de vos préférences.'
+      );
     }
+
     this.router.navigate(['/']);
   }
 

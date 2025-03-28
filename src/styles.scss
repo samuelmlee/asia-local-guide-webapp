@@ -61,3 +61,21 @@ mat-option.mat-mdc-option {
 .autocomplete-80 {
   max-height: 80vh !important;
 }
+
+.success-snackbar {
+  @include mat.snack-bar-overrides(
+    (
+      container-shape: round,
+      container-color: #4caf50,
+      supporting-text-color: white,
+    )
+  );
+}
+.error-snackbar {
+  @include mat.snack-bar-overrides(
+    (
+      container-color: #f44336,
+      supporting-text-color: white,
+    )
+  );
+}
