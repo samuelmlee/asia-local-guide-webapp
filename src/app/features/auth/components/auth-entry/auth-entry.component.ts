@@ -11,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Router } from '@angular/router';
 import { LoggerService } from '../../../../core/services/logger.service';
+import { SnackbarService } from '../../../../core/services/snackbar.service';
 import { EmailCheckResult } from '../../models/email-check-result';
 import { AuthService } from '../../services/auth.service';
 
@@ -37,7 +38,8 @@ export class AuthEntryComponent {
   constructor(
     private readonly authService: AuthService,
     private readonly logger: LoggerService,
-    private readonly router: Router,
+    private readonly snackbar: SnackbarService,
+    private readonly router: Router
   ) {}
 
   public async checkEmailAndNavigate(): Promise<void> {
@@ -60,8 +62,11 @@ export class AuthEntryComponent {
       });
     } catch (error) {
       this.logger.error(
-        'Error while checking userEmail for authentication',
-        error,
+        'Error while checking userEmail existence for authentication',
+        error
+      );
+      this.snackbar.openError(
+        "Impossible de vérifier l'email. Veuillez réessayer ultérieurement."
       );
     }
   }
