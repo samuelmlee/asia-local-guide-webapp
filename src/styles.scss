@@ -16,13 +16,13 @@ body {
   @include mat.icon-button-density(-1);
 }
 
-.large-mat-chip {
+.top-down-mat-chip {
   @include mat.chips-overrides(
     (
       outline-color: transparent,
       with-icon-icon-size: 4rem,
       with-avatar-avatar-size: 4rem,
-      container-height: 6rem,
+      container-height: 8rem,
     )
   );
 
@@ -30,6 +30,16 @@ body {
   .mat-mdc-chip-action-label {
     max-width: 4rem;
     text-wrap: auto;
+  }
+
+  .mdc-evolution-chip-set__chips {
+    display: flex;
+    justify-content: center;
+  }
+
+  .mat-mdc-chip-action {
+    display: flex;
+    flex-direction: column;
   }
 }
 

@@ -38,7 +38,11 @@
         </div>
       }
 
-      <mat-chip-listbox #chipList class="large-mat-chip my-4" [multiple]="true">
+      <mat-chip-listbox
+        #chipList
+        class="top-down-mat-chip my-4"
+        [multiple]="true"
+      >
         @for (tag of activityTags(); track tag.id) {
           <mat-chip-option
             #matChip

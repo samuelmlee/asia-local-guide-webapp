@@ -23,6 +23,7 @@ import { AuthService } from '../../services/auth.service';
   imports: [MatButtonModule, MatChipsModule, MatIconModule, RouterModule],
   templateUrl: './account-created.component.html',
   styleUrl: './account-created.component.scss',
+  providers: [ActivityTagService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AccountCreatedComponent implements OnInit {
