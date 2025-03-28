@@ -42,6 +42,7 @@ import { SnackbarService } from '../../../../core/services/snackbar.service';
 import { Destination } from '../../../../features/search/models/destination.model';
 import { SearchRequest } from '../../../../features/search/models/search-request.model';
 import { ActivityTag } from '../../../activity-tag/models/activity-tag.model';
+import { ActivityTagService } from '../../../activity-tag/services/activity-tag.service';
 import { PlanningService } from '../../../planning/services/planning.service';
 import { DestinationService } from '../../services/destination.service';
 
@@ -65,6 +66,7 @@ import { DestinationService } from '../../services/destination.service';
   providers: [
     { provide: DateAdapter, useClass: NativeDateAdapter },
     DestinationService,
+    ActivityTagService,
   ],
   templateUrl: './mobile-search-dialog.component.html',
   styleUrl: './mobile-search-dialog.component.scss',
@@ -77,13 +79,7 @@ export class MobileSearchDialogComponent implements OnInit {
 
   public filteredOptions: Observable<Destination[]> | undefined;
 
-  public activityTags: ActivityTag[] = [
-    { id: 21910, name: 'Art et culture', promptText: '' },
-    { id: 21911, name: 'Gastronomie', promptText: '' },
-    { id: 21909, name: 'Activités sportives', promptText: '' },
-    { id: 21915, name: 'Cours et ateliers', promptText: '' },
-    { id: 21912, name: 'Tickets et passes', promptText: '' },
-  ];
+  public activityTags = signal<ActivityTag[]>([]);
 
   public readonly searchForm = new FormGroup({
     startDate: new FormControl<Date | null>(null, Validators.required),
@@ -100,7 +96,8 @@ export class MobileSearchDialogComponent implements OnInit {
     private readonly router: Router,
     private readonly dialogRef: MatDialogRef<MobileSearchDialogComponent>,
     private readonly logger: LoggerService,
-    private readonly snackbar: SnackbarService
+    private readonly snackbar: SnackbarService,
+    private readonly activityTagService: ActivityTagService
   ) {}
 
   public ngOnInit(): void {
@@ -115,6 +112,8 @@ export class MobileSearchDialogComponent implements OnInit {
           return query ? this.filter(query as string) : of([]);
         })
       );
+
+    this.initActivityTags();
   }
 
   public async submitSearch(): Promise<void> {
@@ -146,6 +145,15 @@ export class MobileSearchDialogComponent implements OnInit {
 
   public displayFn(value: Destination): string {
     return value.name;
+  }
+
+  private initActivityTags(): void {
+    this.activityTagService
+      .getActivityTags()
+      .then((tags) => this.activityTags.set(tags))
+      .catch((err: unknown) =>
+        this.logger.error('Error fetching Activity Tags', err)
+      );
   }
 
   private async filter(name: string): Promise<Destination[]> {
