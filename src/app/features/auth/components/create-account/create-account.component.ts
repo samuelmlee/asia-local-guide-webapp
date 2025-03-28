@@ -11,6 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { Router, RouterModule } from '@angular/router';
 import { LoggerService } from '../../../../core/services/logger.service';
+import { SnackbarService } from '../../../../core/services/snackbar.service';
 import { validateModel } from '../../../../core/utils/validation-utils';
 import { CreateAccountRequestDTO } from '../../models/create-account-request-dto.model';
 import { AuthService } from '../../services/auth.service';
@@ -32,6 +33,8 @@ import { AuthService } from '../../services/auth.service';
 export class CreateAccountComponent {
   public email = signal('');
 
+  public submitting = signal(false);
+
   public createAccountForm: FormGroup;
 
   constructor(
@@ -39,6 +42,7 @@ export class CreateAccountComponent {
     private readonly fb: FormBuilder,
     private readonly router: Router,
     private readonly logger: LoggerService,
+    private readonly snackbar: SnackbarService
   ) {
     // Initialize createAccountForm
     this.createAccountForm = this.fb.group({
@@ -58,6 +62,9 @@ export class CreateAccountComponent {
 
   public async createAccount(): Promise<void> {
     try {
+      this.submitting.set(true);
+      this.createAccountForm.disable();
+
       const createAccountDTO: CreateAccountRequestDTO = {
         ...this.createAccountForm.value,
         email: this.email(),
@@ -69,7 +76,15 @@ export class CreateAccountComponent {
 
       this.router.navigate(['/account-created']);
     } catch (error) {
+      this.submitting.set(false);
       this.logger.error('Error during account creation', error);
+      // TODO: update when TranslateService is implemented
+      this.snackbar.openError(
+        'Une erreur est survenue lors de la création de votre compte.'
+      );
+    } finally {
+      this.submitting.set(false);
+      this.createAccountForm.enable();
     }
   }
 }

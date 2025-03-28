@@ -1,4 +1,3 @@
-import { formatDate } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -7,6 +6,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoggerService } from '../../../../core/services/logger.service';
+import { formateDateToYMD } from '../../../../core/utils/date-utils';
 import { validateModel } from '../../../../core/utils/validation-utils';
 import { ResponsiveSearchComponent } from '../../../search/components/responsive-search/responsive-search.component';
 import { SearchRequest } from '../../../search/models/search-request.model';
@@ -56,9 +56,8 @@ export class PlanningComponent {
     try {
       const planningRequestDTO: PlanningRequestDTO = {
         destinationId: request.destination.destinationId,
-        // Locale for date format is independent of the user's locale
-        startDate: formatDate(request.startDate ?? '', 'yyyy-MM-dd', 'en-GB'),
-        endDate: formatDate(request.endDate ?? '', 'yyyy-MM-dd', 'en-GB'),
+        startDate: formateDateToYMD(request.startDate),
+        endDate: formateDateToYMD(request.endDate),
         activityTagIds: request.activities.map((activity) => activity.id),
       };
 
@@ -68,10 +67,6 @@ export class PlanningComponent {
         await this.planningService.getDayPlansForRequest(planningRequestDTO);
 
       this.dayPlans.set(dayPlans);
-
-      // const jsonObj = JSON.parse(dayPlansString);
-      // const dayPlansList = jsonObj as DayPlan[];
-      // this.dayPlans.set(dayPlansList);
     } catch (error) {
       this.logger.error('Error while fetching DayPlans', error);
       this.dayPlans.set([]);
