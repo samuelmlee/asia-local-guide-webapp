@@ -112,7 +112,7 @@ export class MobileSearchDialogComponent implements OnInit {
         startWith(''),
         switchMap((value) => {
           const query = typeof value === 'string' ? value : '';
-          return query ? this._filter(query as string) : of([]);
+          return query ? this.filter(query as string) : of([]);
         })
       );
   }
@@ -148,7 +148,7 @@ export class MobileSearchDialogComponent implements OnInit {
     return value.name;
   }
 
-  private async _filter(name: string): Promise<Destination[]> {
+  private async filter(name: string): Promise<Destination[]> {
     const filterValue = name.toLowerCase();
 
     try {
