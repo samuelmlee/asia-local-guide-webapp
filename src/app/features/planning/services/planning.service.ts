@@ -2,10 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { AppError, isAppError } from '../../../core/models/app-error.model';
+import { isAppError } from '../../../core/models/app-error.model';
 import { ErrorType } from '../../../core/models/error-type.enum';
-import { formateDateToYMD as formatDateToYMD } from '../../../core/utils/date-utils';
-import { validateModel } from '../../../core/utils/validation-utils';
+import { formateDateToYMD as formatDateToYMD } from '../../../core/utils/date.utils';
+import { createAppError } from '../../../core/utils/error-processing.utils';
+import { validateModel } from '../../../core/utils/validation.utils';
 import { SearchRequest } from '../../search/models/search-request.model';
 import { DayPlan } from '../models/day-plan.model';
 import { PlanningRequestDTO } from '../models/planning-request-dto.model';
@@ -21,10 +22,7 @@ export class PlanningService {
 
   public async getDayPlansForRequest(request: SearchRequest): Promise<void> {
     if (!request) {
-      throw this.createAppError(
-        ErrorType.VALIDATION,
-        'Search request is required'
-      );
+      throw createAppError(ErrorType.VALIDATION, 'Search request is required');
     }
 
     const planningRequestDTO: PlanningRequestDTO = {
@@ -37,7 +35,7 @@ export class PlanningService {
     try {
       validateModel(planningRequestDTO);
     } catch (validationError) {
-      throw this.createAppError(
+      throw createAppError(
         ErrorType.VALIDATION,
         (validationError as Error).message,
         validationError
@@ -54,11 +52,7 @@ export class PlanningService {
     } catch (error) {
       const appError = isAppError(error)
         ? error
-        : this.createAppError(
-            ErrorType.UNKNOWN,
-            'Failed to create planning',
-            error
-          );
+        : createAppError(ErrorType.UNKNOWN, 'Failed to create planning', error);
 
       throw appError;
     }
@@ -95,18 +89,5 @@ export class PlanningService {
     };
 
     this.planning.set(planning);
-  }
-
-  // Create application errors for non-HTTP errors
-  private createAppError(
-    type: ErrorType,
-    message: string,
-    originalError?: unknown
-  ): AppError {
-    return {
-      type,
-      message,
-      originalError: originalError || new Error(message),
-    };
   }
 }

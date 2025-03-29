@@ -12,7 +12,7 @@ import { MatInputModule } from '@angular/material/input';
 import { Router, RouterModule } from '@angular/router';
 import { LoggerService } from '../../../../core/services/logger.service';
 import { SnackbarService } from '../../../../core/services/snackbar.service';
-import { validateModel } from '../../../../core/utils/validation-utils';
+import { validateModel } from '../../../../core/utils/validation.utils';
 import { CreateAccountRequestDTO } from '../../models/create-account-request-dto.model';
 import { AuthService } from '../../services/auth.service';
 

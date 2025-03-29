@@ -35,10 +35,8 @@ import {
   startWith,
   switchMap,
 } from 'rxjs';
-import { isAppError } from '../../../../core/models/app-error.model';
-import { ErrorType } from '../../../../core/models/error-type.enum';
+import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
 import { LoggerService } from '../../../../core/services/logger.service';
-import { SnackbarService } from '../../../../core/services/snackbar.service';
 import { Destination } from '../../../../features/search/models/destination.model';
 import { SearchRequest } from '../../../../features/search/models/search-request.model';
 import { ActivityTag } from '../../../activity-tag/models/activity-tag.model';
@@ -94,10 +92,10 @@ export class MobileSearchDialogComponent implements OnInit {
     private readonly destinationService: DestinationService,
     private readonly planningService: PlanningService,
     private readonly router: Router,
-    private readonly dialogRef: MatDialogRef<MobileSearchDialogComponent>,
     private readonly logger: LoggerService,
-    private readonly snackbar: SnackbarService,
-    private readonly activityTagService: ActivityTagService
+    private readonly errorHandler: ErrorHandlerService,
+    private readonly activityTagService: ActivityTagService,
+    private readonly dialogRef: MatDialogRef<MobileSearchDialogComponent>
   ) {}
 
   public ngOnInit(): void {
@@ -109,7 +107,7 @@ export class MobileSearchDialogComponent implements OnInit {
         startWith(''),
         switchMap((value) => {
           const query = typeof value === 'string' ? value : '';
-          return query ? this.filter(query as string) : of([]);
+          return query ? this.filter(query) : of([]);
         })
       );
 
@@ -136,7 +134,9 @@ export class MobileSearchDialogComponent implements OnInit {
       this.router.navigate(['/planning']);
       this.dialogRef.close();
     } catch (error) {
-      this.handleError(error, 'Error creating planning');
+      this.errorHandler.handleError(error, 'creating planning', {
+        showSnackbar: true,
+      });
     } finally {
       this.isLoading.set(false);
       this.searchForm.enable();
@@ -152,7 +152,9 @@ export class MobileSearchDialogComponent implements OnInit {
       .getActivityTags()
       .then((tags) => this.activityTags.set(tags))
       .catch((err: unknown) =>
-        this.logger.error('Error fetching Activity Tags', err)
+        this.errorHandler.handleError(err, 'fetching activity tags', {
+          showSnackbar: true,
+        })
       );
   }
 
@@ -168,33 +170,5 @@ export class MobileSearchDialogComponent implements OnInit {
       this.logger.error('Error while fetching Destinations', error);
       return [];
     }
-  }
-
-  private handleError(error: unknown, defaultMessage: string): void {
-    let errorMessage = defaultMessage;
-
-    if (isAppError(error)) {
-      this.logger.error(`${error.type} error creating planning:`, error);
-
-      switch (error.type) {
-        case ErrorType.NETWORK:
-          errorMessage =
-            'Network error. Please check your connection and try again.';
-          break;
-        case ErrorType.VALIDATION:
-          errorMessage = 'Please check your search criteria.';
-          break;
-        case ErrorType.NOT_FOUND:
-          errorMessage = 'No results found for your search criteria.';
-          break;
-        case ErrorType.SERVER:
-          errorMessage = 'Server error. Please try again later.';
-          break;
-      }
-    } else {
-      this.logger.error('Unknown error while creating planning:', error);
-    }
-
-    this.snackbar.openError(errorMessage);
   }
 }
