@@ -36,7 +36,6 @@ import {
   switchMap,
 } from 'rxjs';
 import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
-import { LoggerService } from '../../../../core/services/logger.service';
 import { Destination } from '../../../../features/search/models/destination.model';
 import { SearchRequest } from '../../../../features/search/models/search-request.model';
 import { ActivityTag } from '../../../activity-tag/models/activity-tag.model';
@@ -92,7 +91,6 @@ export class MobileSearchDialogComponent implements OnInit {
     private readonly destinationService: DestinationService,
     private readonly planningService: PlanningService,
     private readonly router: Router,
-    private readonly logger: LoggerService,
     private readonly errorHandler: ErrorHandlerService,
     private readonly activityTagService: ActivityTagService,
     private readonly dialogRef: MatDialogRef<MobileSearchDialogComponent>

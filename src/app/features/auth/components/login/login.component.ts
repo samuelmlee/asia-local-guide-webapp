@@ -18,7 +18,5 @@ export class LoginComponent {
       : null;
 
     this.email.set(emailRoute);
-
-    console.log('In LoginComponent email:', emailRoute);
   }
 }
