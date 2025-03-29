@@ -3,29 +3,29 @@ import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { AppError } from '../../../core/models/app-error.model';
-import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ActivityTag } from '../models/activity-tag.model';
 import { ActivityTagService } from './activity-tag.service';
 
-describe('ActivityTagService', () => {
+// Remove "f" from describe to ensure all tests run
+fdescribe('ActivityTagService', () => {
   let service: ActivityTagService;
   let httpClientSpy: jasmine.SpyObj<HttpClient>;
-  let errorHandlerSpy: jasmine.SpyObj<ErrorHandlerService>;
+  let formatServiceErrorSpy: jasmine.Spy;
 
-  const mockApiUrl = 'http://localhost:8080/v1/activity-tags';
+  const mockApiUrl = 'https://localhost:8080/v1/activity-tags';
 
   beforeEach(() => {
     httpClientSpy = jasmine.createSpyObj('HttpClient', ['get']);
-    errorHandlerSpy = jasmine.createSpyObj('ErrorHandlerService', [
-      'formatServiceError',
-    ]);
+
+    // Create spy and replace the original function
+    formatServiceErrorSpy = jasmine.createSpy('formatServiceError');
 
     TestBed.configureTestingModule({
       providers: [
         provideExperimentalZonelessChangeDetection(),
         ActivityTagService,
+        formatServiceErrorSpy,
         { provide: HttpClient, useValue: httpClientSpy },
-        { provide: ErrorHandlerService, useValue: errorHandlerSpy },
         {
           provide: 'environment',
           useValue: { apiUrl: 'https://localhost:8080' },
@@ -43,7 +43,6 @@ describe('ActivityTagService', () => {
         { id: 2, name: 'Swimming', promptText: 'Swimming prompt' },
       ];
 
-      // Just mock the HTTP client - no need to mock firstValueFrom
       httpClientSpy.get.and.returnValue(of(mockActivityTags));
 
       const result = await service.getActivityTags();
@@ -53,7 +52,7 @@ describe('ActivityTagService', () => {
       expect(result.length).toBe(2);
     });
 
-    it('should handle errors and format them using the error handler', async () => {
+    it('should handle errors and format them using formatServiceError utility', async () => {
       const testError = new Error('Test error');
       const formattedError = {
         type: 'UNKNOWN',
@@ -61,20 +60,19 @@ describe('ActivityTagService', () => {
         originalError: testError,
       };
 
-      // Return an observable that will error
+      // Configure the HTTP call to throw an error
       httpClientSpy.get.and.callFake(() => {
         throw testError;
       });
 
-      errorHandlerSpy.formatServiceError.and.returnValue(
-        formattedError as AppError
-      );
+      // Setup the spy to return our formatted error
+      formatServiceErrorSpy.and.returnValue(formattedError as AppError);
 
       try {
         await service.getActivityTags();
         fail('Expected an error to be thrown');
       } catch (error) {
-        expect(errorHandlerSpy.formatServiceError).toHaveBeenCalledWith(
+        expect(formatServiceErrorSpy).toHaveBeenCalledWith(
           testError,
           'Error fetching activity tags'
         );

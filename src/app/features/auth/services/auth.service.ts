@@ -1,13 +1,18 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, NgZone, Signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { AngularFireAuth } from '@angular/fire/auth/compat';
+import {
+  Auth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  user,
+} from '@angular/fire/auth';
 import { catchError, firstValueFrom, from, map, of, switchMap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { createAppError } from '../../../core/models/app-error.model';
 import { ErrorType } from '../../../core/models/error-type.enum';
-import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { LoggerService } from '../../../core/services/logger.service';
+import { ErrorUtils } from '../../../core/utils/error.utils';
 import { AppUser } from '../models/app-user.model';
 import { CreateAccountRequestDTO } from '../models/create-account-request-dto.model';
 import { EmailCheckResult } from '../models/email-check-result';
@@ -21,11 +26,10 @@ export class AuthService {
   public appUser: Signal<AppUser | null | undefined>;
 
   constructor(
-    private readonly firebaseAuth: AngularFireAuth,
+    private readonly firebaseAuth: Auth,
     private readonly http: HttpClient,
     private readonly ngZone: NgZone,
-    private readonly logger: LoggerService,
-    private readonly errorHandler: ErrorHandlerService
+    private readonly logger: LoggerService
   ) {
     this.appUser = this.initAppUser();
   }
@@ -43,7 +47,7 @@ export class AuthService {
 
       return await firstValueFrom(emailCheck);
     } catch (error) {
-      throw this.errorHandler.formatServiceError(error, 'Error checking email');
+      throw ErrorUtils.formatServiceError(error, 'Error checking email');
     }
   }
 
@@ -54,15 +58,16 @@ export class AuthService {
 
     return this.ngZone.run(async () => {
       try {
-        const response = await this.firebaseAuth.createUserWithEmailAndPassword(
+        const response = await createUserWithEmailAndPassword(
+          this.firebaseAuth,
           dto.email,
           dto.password
         );
-        await this.firebaseAuth.updateProfile(response.user, {
+        await updateProfile(response.user, {
           displayName: `${dto.firstName} ${dto.lastName}`,
         });
       } catch (error) {
-        throw this.errorHandler.formatServiceError(
+        throw ErrorUtils.formatServiceError(
           error,
           'Error creating user account'
         );
@@ -72,7 +77,7 @@ export class AuthService {
 
   private initAppUser(): Signal<AppUser | null | undefined> {
     const appUser$ = this.ngZone.run(() =>
-      this.firebaseAuth.user(this.firebaseAuth).pipe(
+      user(this.firebaseAuth).pipe(
         switchMap((user) => {
           if (!user) return of(null);
 

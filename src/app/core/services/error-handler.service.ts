@@ -1,10 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  AppError,
-  createAppError,
-  isAppError,
-} from '../models/app-error.model';
-import { ErrorType } from '../models/error-type.enum';
+import { isAppError } from '../models/app-error.model';
 import { LoggerService } from './logger.service';
 import { SnackbarService } from './snackbar.service';
 
@@ -46,21 +41,5 @@ export class ErrorHandlerService {
     if (options?.showSnackbar) {
       this.snackbar.openError(errorMessage);
     }
-  }
-
-  /**
-   * Format service errors into AppError objects.
-   * @param error - The error to format.
-   * @param defaultMessage - The default message to use if the error is not an AppError.
-   * @returns An AppError object.
-   */
-  public formatServiceError(
-    error: unknown,
-    defaultMessage = 'An unknown error occurred'
-  ): AppError {
-    // Format error if it is not of type AppError
-    return isAppError(error)
-      ? error
-      : createAppError(ErrorType.UNKNOWN, defaultMessage, error);
   }
 }

@@ -4,9 +4,9 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { createAppError } from '../../../core/models/app-error.model';
 import { ErrorType } from '../../../core/models/error-type.enum';
-import { ErrorHandlerService } from '../../../core/services/error-handler.service';
-import { formateDateToYMD as formatDateToYMD } from '../../../core/utils/date.utils';
-import { validateModel } from '../../../core/utils/validation.utils';
+import { DateUtils } from '../../../core/utils/date.utils';
+import { ErrorUtils } from '../../../core/utils/error.utils';
+import { ValidationUtils } from '../../../core/utils/validation.utils';
 import { SearchRequest } from '../../search/models/search-request.model';
 import { DayPlan } from '../models/day-plan.model';
 import { PlanningRequestDTO } from '../models/planning-request-dto.model';
@@ -18,10 +18,7 @@ export class PlanningService {
 
   public planning = signal<Planning | null>(null);
 
-  constructor(
-    private readonly http: HttpClient,
-    private readonly errorHandler: ErrorHandlerService
-  ) {}
+  constructor(private readonly http: HttpClient) {}
 
   public async getDayPlansForRequest(request: SearchRequest): Promise<void> {
     if (!request) {
@@ -30,13 +27,13 @@ export class PlanningService {
 
     const planningRequestDTO: PlanningRequestDTO = {
       destinationId: request.destination.destinationId,
-      startDate: formatDateToYMD(request.startDate),
-      endDate: formatDateToYMD(request.endDate),
+      startDate: DateUtils.formatDateToYMD(request.startDate),
+      endDate: DateUtils.formatDateToYMD(request.endDate),
       activityTagIds: request.activities.map((activity) => activity.id),
     };
 
     try {
-      validateModel(planningRequestDTO);
+      ValidationUtils.validateModel(planningRequestDTO);
     } catch (validationError) {
       throw createAppError(
         ErrorType.VALIDATION,
@@ -53,10 +50,7 @@ export class PlanningService {
         request.endDate!
       );
     } catch (error) {
-      throw this.errorHandler.formatServiceError(
-        error,
-        'Failed to created planning'
-      );
+      throw ErrorUtils.formatServiceError(error, 'Failed to created planning');
     }
   }
 

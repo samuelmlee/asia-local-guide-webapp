@@ -1,57 +1,61 @@
-import { formateDateToYMD } from './date.utils';
+import { DateUtils } from './date.utils';
 
-describe('date.utils', () => {
-  describe('formateDateToYMD', () => {
+describe('DateUtils', () => {
+  describe('DateUtils.formateDateToYMD', () => {
     it('should return empty string for null input', () => {
-      expect(formateDateToYMD(null)).toBe('');
+      expect(DateUtils.formatDateToYMD(null)).toBe('');
     });
 
     it('should return empty string for invalid Date', () => {
-      expect(formateDateToYMD(new Date('invalid-date'))).toBe('');
+      expect(DateUtils.formatDateToYMD(new Date('invalid-date'))).toBe('');
     });
 
     it('should format a regular date properly', () => {
       // Using a fixed date: April 15, 2023
       const testDate = new Date(2023, 3, 15); // Note: months are 0-indexed in JS
-      expect(formateDateToYMD(testDate)).toBe('2023-04-15');
+      expect(DateUtils.formatDateToYMD(testDate)).toBe('2023-04-15');
     });
 
     it('should handle single-digit months and days', () => {
       // January 5, 2023
       const testDate = new Date(2023, 0, 5);
-      expect(formateDateToYMD(testDate)).toBe('2023-01-05');
+      expect(DateUtils.formatDateToYMD(testDate)).toBe('2023-01-05');
     });
 
     it('should format dates at the end of month correctly', () => {
       // December 31, 2023
       const testDate = new Date(2023, 11, 31);
-      expect(formateDateToYMD(testDate)).toBe('2023-12-31');
+      expect(DateUtils.formatDateToYMD(testDate)).toBe('2023-12-31');
     });
 
     it('should handle leap years correctly', () => {
       // February 29, 2024 (leap year)
       const testDate = new Date(2024, 1, 29);
-      expect(formateDateToYMD(testDate)).toBe('2024-02-29');
+      expect(DateUtils.formatDateToYMD(testDate)).toBe('2024-02-29');
     });
 
     it('should handle different years correctly', () => {
       // Testing with past year
-      expect(formateDateToYMD(new Date(1999, 11, 31))).toBe('1999-12-31');
+      expect(DateUtils.formatDateToYMD(new Date(1999, 11, 31))).toBe(
+        '1999-12-31'
+      );
 
       // Testing with future year
-      expect(formateDateToYMD(new Date(2030, 0, 1))).toBe('2030-01-01');
+      expect(DateUtils.formatDateToYMD(new Date(2030, 0, 1))).toBe(
+        '2030-01-01'
+      );
     });
 
     it('should handle date objects with time components', () => {
       // Date with specific time: June 15, 2023, 14:30:45
       const testDate = new Date(2023, 5, 15, 14, 30, 45);
-      expect(formateDateToYMD(testDate)).toBe('2023-06-15');
+      expect(DateUtils.formatDateToYMD(testDate)).toBe('2023-06-15');
     });
 
     it('should handle midnight correctly', () => {
       // Midnight on July 10, 2023
       const testDate = new Date(2023, 6, 10, 0, 0, 0);
-      expect(formateDateToYMD(testDate)).toBe('2023-07-10');
+      expect(DateUtils.formatDateToYMD(testDate)).toBe('2023-07-10');
     });
 
     it('should adjust for timezone correctly', () => {
@@ -63,7 +67,7 @@ describe('date.utils', () => {
       const localDate = new Date(utcDate.getTime() - offset * 60 * 1000);
       const expected = localDate.toISOString().split('T')[0];
 
-      expect(formateDateToYMD(utcDate)).toBe(expected);
+      expect(DateUtils.formatDateToYMD(utcDate)).toBe(expected);
     });
 
     it('should create the same output regardless of time of day', () => {
@@ -71,10 +75,10 @@ describe('date.utils', () => {
       const morningDate = new Date(2023, 7, 20, 9, 0, 0); // August 20, 2023 9:00 AM
       const eveningDate = new Date(2023, 7, 20, 21, 0, 0); // August 20, 2023 9:00 PM
 
-      expect(formateDateToYMD(morningDate)).toBe('2023-08-20');
-      expect(formateDateToYMD(eveningDate)).toBe('2023-08-20');
-      expect(formateDateToYMD(morningDate)).toEqual(
-        formateDateToYMD(eveningDate)
+      expect(DateUtils.formatDateToYMD(morningDate)).toBe('2023-08-20');
+      expect(DateUtils.formatDateToYMD(eveningDate)).toBe('2023-08-20');
+      expect(DateUtils.formatDateToYMD(morningDate)).toEqual(
+        DateUtils.formatDateToYMD(eveningDate)
       );
     });
   });
