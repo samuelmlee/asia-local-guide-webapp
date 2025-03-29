@@ -1,4 +1,7 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import {
+  ApplicationConfig,
+  provideExperimentalZonelessChangeDetection,
+} from '@angular/core';
 import { provideRouter, withRouterConfig } from '@angular/router';
 
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
@@ -18,7 +21,7 @@ export const SHORT_DATE_FORMATS: MatDateFormats = MAT_NATIVE_DATE_FORMATS;
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideExperimentalZonelessChangeDetection(),
     provideRouter(
       routes,
       withRouterConfig({
