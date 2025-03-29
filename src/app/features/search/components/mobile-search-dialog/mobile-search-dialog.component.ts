@@ -167,7 +167,9 @@ export class MobileSearchDialogComponent implements OnInit {
 
       return destinations;
     } catch (error) {
-      this.logger.error('Error while fetching Destinations', error);
+      this.errorHandler.handleError(error, 'fetching destinations', {
+        showSnackbar: true,
+      });
       return [];
     }
   }

@@ -2,10 +2,10 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { isAppError } from '../../../core/models/app-error.model';
+import { createAppError } from '../../../core/models/app-error.model';
 import { ErrorType } from '../../../core/models/error-type.enum';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { formateDateToYMD as formatDateToYMD } from '../../../core/utils/date.utils';
-import { createAppError } from '../../../core/utils/error-processing.utils';
 import { validateModel } from '../../../core/utils/validation.utils';
 import { SearchRequest } from '../../search/models/search-request.model';
 import { DayPlan } from '../models/day-plan.model';
@@ -18,7 +18,10 @@ export class PlanningService {
 
   public planning = signal<Planning | null>(null);
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly errorHandler: ErrorHandlerService
+  ) {}
 
   public async getDayPlansForRequest(request: SearchRequest): Promise<void> {
     if (!request) {
@@ -50,11 +53,10 @@ export class PlanningService {
         request.endDate!
       );
     } catch (error) {
-      const appError = isAppError(error)
-        ? error
-        : createAppError(ErrorType.UNKNOWN, 'Failed to create planning', error);
-
-      throw appError;
+      throw this.errorHandler.formatServiceError(
+        error,
+        'Failed to created planning'
+      );
     }
   }
 

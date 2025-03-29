@@ -8,10 +8,13 @@ import {
   signOut,
   updateProfile,
   user,
-  UserCredential,
 } from '@angular/fire/auth';
-import { firstValueFrom, from, map, of, switchMap } from 'rxjs';
+import { catchError, firstValueFrom, from, map, of, switchMap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { createAppError } from '../../../core/models/app-error.model';
+import { ErrorType } from '../../../core/models/error-type.enum';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { LoggerService } from '../../../core/services/logger.service';
 import { AppUser } from '../models/app-user.model';
 import { CreateAccountRequestDTO } from '../models/create-account-request-dto.model';
 import { EmailCheckResult } from '../models/email-check-result';
@@ -27,44 +30,82 @@ export class AuthService {
   constructor(
     private readonly firebaseAuth: Auth,
     private readonly http: HttpClient,
-    private readonly ngZone: NgZone
+    private readonly ngZone: NgZone,
+    private readonly logger: LoggerService,
+    private readonly errorHandler: ErrorHandlerService
   ) {
     this.appUser = this.initAppUser();
   }
 
-  public checkEmail(email: string): Promise<EmailCheckResult> {
-    const emailCheck = this.http.post<EmailCheckResult>(
-      `${this.env.apiUrl}/auth/check-email`,
-      { email }
-    );
+  public async checkEmail(email: string): Promise<EmailCheckResult> {
+    if (!email) {
+      throw createAppError(ErrorType.VALIDATION, 'Email is required');
+    }
 
-    return firstValueFrom(emailCheck);
+    try {
+      const emailCheck = this.http.post<EmailCheckResult>(
+        `${this.env.apiUrl}/auth/check-email`,
+        { email }
+      );
+
+      return await firstValueFrom(emailCheck);
+    } catch (error) {
+      throw this.errorHandler.formatServiceError(error, 'Error checking email');
+    }
   }
 
-  public login(email: string, password: string): Promise<UserCredential> {
-    return this.ngZone.run(() =>
-      signInWithEmailAndPassword(this.firebaseAuth, email, password)
-    );
+  public login(email: string, password: string): Promise<void> {
+    if (!email || !password) {
+      throw createAppError(
+        ErrorType.VALIDATION,
+        'Email and Password are required'
+      );
+    }
+
+    return this.ngZone.run(async () => {
+      try {
+        await signInWithEmailAndPassword(this.firebaseAuth, email, password);
+      } catch (error) {
+        throw this.errorHandler.formatServiceError(error, 'Error during login');
+      }
+    });
   }
 
-  public register(
-    dto: CreateAccountRequestDTO
-  ): Promise<UserCredential | void> {
-    return this.ngZone.run(() =>
-      createUserWithEmailAndPassword(
-        this.firebaseAuth,
-        dto.email,
-        dto.password
-      ).then((response) =>
-        updateProfile(response.user, {
+  public register(dto: CreateAccountRequestDTO): Promise<void> {
+    if (!dto.email || !dto.password || !dto.firstName || !dto.lastName) {
+      throw createAppError(ErrorType.VALIDATION, 'All fields are required');
+    }
+
+    return this.ngZone.run(async () => {
+      try {
+        const response = await createUserWithEmailAndPassword(
+          this.firebaseAuth,
+          dto.email,
+          dto.password
+        );
+        await updateProfile(response.user, {
           displayName: `${dto.firstName} ${dto.lastName}`,
-        })
-      )
-    );
+        });
+      } catch (error) {
+        throw this.errorHandler.formatServiceError(
+          error,
+          'Error creating user account'
+        );
+      }
+    });
   }
 
   public logout(): Promise<void> {
-    return this.ngZone.run(() => signOut(this.firebaseAuth));
+    return this.ngZone.run(async () => {
+      try {
+        await signOut(this.firebaseAuth);
+      } catch (error) {
+        throw this.errorHandler.formatServiceError(
+          error,
+          'Error during log out'
+        );
+      }
+    });
   }
 
   private initAppUser(): Signal<AppUser | null | undefined> {
@@ -89,8 +130,27 @@ export class AuthService {
                   ? new Date(user.metadata.lastSignInTime)
                   : undefined,
               };
+            }),
+            catchError((error) => {
+              this.logger.error(
+                'Error fetching user Firebase Id token and Roles',
+                error
+              );
+              return of({
+                uid: user.uid,
+                email: user.email ?? '',
+                displayName: user.displayName ?? '',
+                roles: [],
+                createdAt: undefined,
+                lastLoginAt: undefined,
+              });
             })
           );
+        }),
+        catchError((error) => {
+          // Log the auth stream error
+          this.logger.error('Authentication for user error', error);
+          return of(null);
         })
       )
     );

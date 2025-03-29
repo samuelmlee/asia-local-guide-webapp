@@ -16,3 +16,15 @@ export function isAppError(error: unknown): error is AppError {
     'originalError' in error
   );
 }
+
+export function createAppError(
+  type: ErrorType,
+  message: string,
+  originalError?: unknown
+): AppError {
+  return {
+    type,
+    message,
+    originalError: originalError || new Error(message),
+  };
+}
