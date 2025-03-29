@@ -10,9 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { Router, RouterModule } from '@angular/router';
-import { LoggerService } from '../../../../core/services/logger.service';
-import { SnackbarService } from '../../../../core/services/snackbar.service';
-import { validateModel } from '../../../../core/utils/validation.utils';
+import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
 import { CreateAccountRequestDTO } from '../../models/create-account-request-dto.model';
 import { AuthService } from '../../services/auth.service';
 
@@ -41,8 +39,7 @@ export class CreateAccountComponent {
     private readonly authService: AuthService,
     private readonly fb: FormBuilder,
     private readonly router: Router,
-    private readonly logger: LoggerService,
-    private readonly snackbar: SnackbarService
+    private readonly errorHandler: ErrorHandlerService
   ) {
     // Initialize createAccountForm
     this.createAccountForm = this.fb.group({
@@ -70,18 +67,13 @@ export class CreateAccountComponent {
         email: this.email(),
       };
 
-      validateModel(createAccountDTO);
-
       await this.authService.register(createAccountDTO);
 
       this.router.navigate(['/account-created']);
     } catch (error) {
-      this.submitting.set(false);
-      this.logger.error('Error during account creation', error);
-      // TODO: update when TranslateService is implemented
-      this.snackbar.openError(
-        'Une erreur est survenue lors de la création de votre compte.'
-      );
+      this.errorHandler.handleError(error, 'creating account', {
+        showSnackbar: true,
+      });
     } finally {
       this.submitting.set(false);
       this.createAccountForm.enable();

@@ -31,7 +31,7 @@ export class ErrorHandlerService {
   public handleError(
     error: unknown,
     context: string,
-    options: ErrorHanderOptions
+    options?: ErrorHanderOptions
   ): void {
     let errorMessage;
 
@@ -43,7 +43,7 @@ export class ErrorHandlerService {
       errorMessage = `An unknown error occurred while ${context}`;
     }
 
-    if (options.showSnackbar) {
+    if (options?.showSnackbar) {
       this.snackbar.openError(errorMessage);
     }
   }
