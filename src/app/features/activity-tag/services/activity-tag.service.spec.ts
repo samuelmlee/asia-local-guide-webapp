@@ -2,29 +2,26 @@ import { HttpClient } from '@angular/common/http';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
-import { AppError } from '../../../core/models/app-error.model';
+import { ErrorUtils } from '../../../core/utils/error.utils';
 import { ActivityTag } from '../models/activity-tag.model';
 import { ActivityTagService } from './activity-tag.service';
 
-// Remove "f" from describe to ensure all tests run
-fdescribe('ActivityTagService', () => {
+describe('ActivityTagService', () => {
   let service: ActivityTagService;
   let httpClientSpy: jasmine.SpyObj<HttpClient>;
   let formatServiceErrorSpy: jasmine.Spy;
 
-  const mockApiUrl = 'https://localhost:8080/v1/activity-tags';
+  const mockApiUrl = 'http://localhost:8080/v1/activity-tags';
 
   beforeEach(() => {
     httpClientSpy = jasmine.createSpyObj('HttpClient', ['get']);
 
-    // Create spy and replace the original function
-    formatServiceErrorSpy = jasmine.createSpy('formatServiceError');
+    formatServiceErrorSpy = spyOn(ErrorUtils, 'formatServiceError');
 
     TestBed.configureTestingModule({
       providers: [
         provideExperimentalZonelessChangeDetection(),
         ActivityTagService,
-        formatServiceErrorSpy,
         { provide: HttpClient, useValue: httpClientSpy },
         {
           provide: 'environment',
@@ -65,14 +62,13 @@ fdescribe('ActivityTagService', () => {
         throw testError;
       });
 
-      // Setup the spy to return our formatted error
-      formatServiceErrorSpy.and.returnValue(formattedError as AppError);
+      formatServiceErrorSpy.and.returnValue(formattedError);
 
       try {
         await service.getActivityTags();
         fail('Expected an error to be thrown');
       } catch (error) {
-        expect(formatServiceErrorSpy).toHaveBeenCalledWith(
+        expect(ErrorUtils.formatServiceError).toHaveBeenCalledWith(
           testError,
           'Error fetching activity tags'
         );

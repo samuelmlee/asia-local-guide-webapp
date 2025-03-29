@@ -10,13 +10,16 @@ import { of, throwError } from 'rxjs';
 import { AppError } from '../models/app-error.model';
 import { ErrorType } from '../models/error-type.enum';
 import { httpErrorInterceptor } from './http-error.interceptor';
+import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 describe('httpErrorInterceptor', () => {
   const interceptor: HttpInterceptorFn = (req, next) =>
     TestBed.runInInjectionContext(() => httpErrorInterceptor(req, next));
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [provideExperimentalZonelessChangeDetection()],
+    });
   });
 
   it('should be created', () => {

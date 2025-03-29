@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
+import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { createAppError } from '../models/app-error.model';
 import { ErrorType } from '../models/error-type.enum';
 import { ErrorHandlerService } from './error-handler.service';
@@ -22,6 +23,7 @@ describe('ErrorHandlerService', () => {
         ErrorHandlerService,
         { provide: LoggerService, useValue: loggerSpyObj },
         { provide: SnackbarService, useValue: snackbarSpyObj },
+        provideExperimentalZonelessChangeDetection(),
       ],
     });
 

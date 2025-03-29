@@ -1,3 +1,4 @@
+import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SnackbarService } from './snackbar.service';
@@ -10,7 +11,11 @@ describe('SnackbarService', () => {
     const spy = jasmine.createSpyObj('MatSnackBar', ['open']);
 
     TestBed.configureTestingModule({
-      providers: [SnackbarService, { provide: MatSnackBar, useValue: spy }],
+      providers: [
+        SnackbarService,
+        { provide: MatSnackBar, useValue: spy },
+        provideExperimentalZonelessChangeDetection(),
+      ],
     });
 
     service = TestBed.inject(SnackbarService);
