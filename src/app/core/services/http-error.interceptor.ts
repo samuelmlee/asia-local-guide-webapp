@@ -15,7 +15,7 @@ export const httpErrorInterceptor: HttpInterceptorFn = (
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       // Create structured AppError
-      const appError: AppError = createAppError(error);
+      const appError: AppError = createAppErrorFromHttp(error);
 
       // Return AppError for components
       return throwError(() => appError);
@@ -25,7 +25,7 @@ export const httpErrorInterceptor: HttpInterceptorFn = (
 
 // TODO: use translation keys when translation service implemented
 
-function createAppError(error: HttpErrorResponse): AppError {
+function createAppErrorFromHttp(error: HttpErrorResponse): AppError {
   // Network or client-side error
   if (error.status === 0) {
     return {

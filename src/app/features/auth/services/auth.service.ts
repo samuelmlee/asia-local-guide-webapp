@@ -1,14 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, NgZone, Signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import {
-  Auth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  updateProfile,
-  user,
-} from '@angular/fire/auth';
+import { AngularFireAuth } from '@angular/fire/auth/compat';
 import { catchError, firstValueFrom, from, map, of, switchMap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { createAppError } from '../../../core/models/app-error.model';
@@ -28,7 +21,7 @@ export class AuthService {
   public appUser: Signal<AppUser | null | undefined>;
 
   constructor(
-    private readonly firebaseAuth: Auth,
+    private readonly firebaseAuth: AngularFireAuth,
     private readonly http: HttpClient,
     private readonly ngZone: NgZone,
     private readonly logger: LoggerService,
@@ -54,23 +47,6 @@ export class AuthService {
     }
   }
 
-  public login(email: string, password: string): Promise<void> {
-    if (!email || !password) {
-      throw createAppError(
-        ErrorType.VALIDATION,
-        'Email and Password are required'
-      );
-    }
-
-    return this.ngZone.run(async () => {
-      try {
-        await signInWithEmailAndPassword(this.firebaseAuth, email, password);
-      } catch (error) {
-        throw this.errorHandler.formatServiceError(error, 'Error during login');
-      }
-    });
-  }
-
   public register(dto: CreateAccountRequestDTO): Promise<void> {
     if (!dto.email || !dto.password || !dto.firstName || !dto.lastName) {
       throw createAppError(ErrorType.VALIDATION, 'All fields are required');
@@ -78,12 +54,11 @@ export class AuthService {
 
     return this.ngZone.run(async () => {
       try {
-        const response = await createUserWithEmailAndPassword(
-          this.firebaseAuth,
+        const response = await this.firebaseAuth.createUserWithEmailAndPassword(
           dto.email,
           dto.password
         );
-        await updateProfile(response.user, {
+        await this.firebaseAuth.updateProfile(response.user, {
           displayName: `${dto.firstName} ${dto.lastName}`,
         });
       } catch (error) {
@@ -95,22 +70,9 @@ export class AuthService {
     });
   }
 
-  public logout(): Promise<void> {
-    return this.ngZone.run(async () => {
-      try {
-        await signOut(this.firebaseAuth);
-      } catch (error) {
-        throw this.errorHandler.formatServiceError(
-          error,
-          'Error during log out'
-        );
-      }
-    });
-  }
-
   private initAppUser(): Signal<AppUser | null | undefined> {
     const appUser$ = this.ngZone.run(() =>
-      user(this.firebaseAuth).pipe(
+      this.firebaseAuth.user(this.firebaseAuth).pipe(
         switchMap((user) => {
           if (!user) return of(null);
 
