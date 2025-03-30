@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { IdTokenResult, User } from '@angular/fire/auth';
+import { IdTokenResult, User, UserCredential } from '@angular/fire/auth';
 import { of } from 'rxjs';
 import { ErrorType } from '../../../core/models/error-type.enum';
 import { LoggerService } from '../../../core/services/logger.service';
@@ -15,12 +15,6 @@ describe('AuthService', () => {
   let httpClientSpy: jasmine.SpyObj<HttpClient>;
   let authProviderSpy: jasmine.SpyObj<FirebaseAuthProvider>;
   let loggerSpy: jasmine.SpyObj<LoggerService>;
-
-  // Helper function to wait for async operations
-  async function waitForAsyncOperations(): Promise<void> {
-    await Promise.resolve();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-  }
 
   beforeEach(() => {
     httpClientSpy = jasmine.createSpyObj('HttpClient', ['get', 'post']);
@@ -36,7 +30,7 @@ describe('AuthService', () => {
       'error',
     ]);
 
-    // Default behavior
+    // Default return value for user observable
     authProviderSpy.user.and.returnValue(of(null));
 
     TestBed.configureTestingModule({
@@ -75,7 +69,7 @@ describe('AuthService', () => {
       service.appUser();
 
       // Wait for async operations
-      await waitForAsyncOperations();
+      await new Promise((resolve) => setTimeout(resolve, 0));
 
       // Check the value
       expect(service.appUser()).toBeNull();
@@ -155,6 +149,80 @@ describe('AuthService', () => {
       // Verify the user's getIdTokenResult was called with force refresh
       expect(mockUser.getIdTokenResult).toHaveBeenCalledWith(true);
     });
+
+    it('should handle error when getIdTokenResult throws exception', async () => {
+      // Reset TestBed for this specific test
+      TestBed.resetTestingModule();
+
+      // Create token error
+      const tokenError = new Error('Token fetch failed');
+
+      // Setup user object but with failing getIdTokenResult
+      const mockUser = {
+        uid: 'test-uid',
+        email: 'test@example.com',
+        displayName: 'Test User',
+        metadata: {
+          creationTime: '2023-01-01T12:00:00Z',
+          lastSignInTime: '2023-01-02T12:00:00Z',
+        },
+        // Method that throws an error
+        getIdTokenResult: () => Promise.reject(tokenError),
+      } as unknown as User;
+
+      // Spy on the method to track calls
+      spyOn(mockUser, 'getIdTokenResult').and.returnValue(
+        Promise.reject(tokenError)
+      );
+
+      // Re-create spies
+      httpClientSpy = jasmine.createSpyObj('HttpClient', ['get', 'post']);
+      authProviderSpy = jasmine.createSpyObj('FirebaseAuthProvider', ['user']);
+      loggerSpy = jasmine.createSpyObj('LoggerService', [
+        'info',
+        'warning',
+        'error',
+      ]);
+
+      // Configure auth provider to return our user
+      authProviderSpy.user.and.returnValue(of(mockUser));
+
+      // Configure TestBed
+      TestBed.configureTestingModule({
+        providers: [
+          AuthService,
+          { provide: HttpClient, useValue: httpClientSpy },
+          { provide: FirebaseAuthProvider, useValue: authProviderSpy },
+          { provide: LoggerService, useValue: loggerSpy },
+          provideExperimentalZonelessChangeDetection(),
+        ],
+      });
+
+      // Get the service
+      service = TestBed.inject(AuthService);
+
+      // Call the getter to initialize the signal
+      service.appUser();
+
+      // Wait for async operations
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Assert - user should still exist but with no roles
+      expect(service.appUser()).toBeTruthy();
+      expect(service.appUser()?.uid).toBe('test-uid');
+      expect(service.appUser()?.email).toBe('test@example.com');
+      expect(service.appUser()?.displayName).toBe('Test User');
+      expect(service.appUser()?.roles).toEqual([]);
+
+      // Verify error was logged
+      expect(loggerSpy.error).toHaveBeenCalledWith(
+        'Error fetching user Firebase Id token and Roles',
+        tokenError
+      );
+
+      // Verify getIdTokenResult was called with force refresh
+      expect(mockUser.getIdTokenResult).toHaveBeenCalledWith(true);
+    });
   });
 
   describe('checkEmail', () => {
@@ -220,6 +288,182 @@ describe('AuthService', () => {
       expect(ErrorUtils.formatServiceError).toHaveBeenCalledWith(
         mockError,
         'Error checking email'
+      );
+    });
+  });
+
+  describe('register', () => {
+    it('should throw validation error if any field is missing', async () => {
+      // Test missing email
+      await expectAsync(
+        service.register({
+          email: '',
+          password: 'password123',
+          firstName: 'John',
+          lastName: 'Doe',
+        })
+      ).toBeRejectedWith(
+        jasmine.objectContaining({
+          type: ErrorType.VALIDATION,
+          message: jasmine.stringMatching(/All fields are required/),
+        })
+      );
+
+      // Test missing password
+      await expectAsync(
+        service.register({
+          email: 'test@example.com',
+          password: '',
+          firstName: 'John',
+          lastName: 'Doe',
+        })
+      ).toBeRejectedWith(
+        jasmine.objectContaining({
+          type: ErrorType.VALIDATION,
+          message: jasmine.stringMatching(/All fields are required/),
+        })
+      );
+
+      // Test missing firstName
+      await expectAsync(
+        service.register({
+          email: 'test@example.com',
+          password: 'password123',
+          firstName: '',
+          lastName: 'Doe',
+        })
+      ).toBeRejectedWith(
+        jasmine.objectContaining({
+          type: ErrorType.VALIDATION,
+          message: jasmine.stringMatching(/All fields are required/),
+        })
+      );
+
+      // Test missing lastName
+      await expectAsync(
+        service.register({
+          email: 'test@example.com',
+          password: 'password123',
+          firstName: 'John',
+          lastName: '',
+        })
+      ).toBeRejectedWith(
+        jasmine.objectContaining({
+          type: ErrorType.VALIDATION,
+          message: jasmine.stringMatching(/All fields are required/),
+        })
+      );
+    });
+
+    it('should create user account and update profile on successful registration', async () => {
+      // Setup mock user and credential
+      const mockUser: Partial<User> = { uid: 'new-user-123' };
+      const mockUserCredential: Partial<UserCredential> = {
+        user: mockUser as User,
+      };
+
+      // Configure spies for this test case
+      authProviderSpy.createUserWithEmailAndPassword.and.returnValue(
+        Promise.resolve(mockUserCredential as UserCredential)
+      );
+      authProviderSpy.updateProfile.and.returnValue(Promise.resolve());
+
+      // Execute registration
+      await service.register({
+        email: 'newuser@example.com',
+        password: 'SecurePassword123',
+        firstName: 'Jane',
+        lastName: 'Smith',
+      });
+
+      // Verify auth provider methods were called with correct arguments
+      expect(
+        authProviderSpy.createUserWithEmailAndPassword
+      ).toHaveBeenCalledWith('newuser@example.com', 'SecurePassword123');
+
+      expect(authProviderSpy.updateProfile).toHaveBeenCalledWith(
+        mockUser as User,
+        {
+          displayName: 'Jane Smith',
+        }
+      );
+    });
+
+    it('should handle error when creating user account', async () => {
+      // Setup error case
+      const authError = new Error('Email already in use');
+      const formattedError = {
+        type: ErrorType.UNAUTHORIZED,
+        message: 'Formatted account creation error',
+        originalError: authError,
+      };
+
+      // Reset and reconfigure spies for this test case
+      authProviderSpy.createUserWithEmailAndPassword.calls.reset();
+      authProviderSpy.updateProfile.calls.reset();
+      authProviderSpy.createUserWithEmailAndPassword.and.returnValue(
+        Promise.reject(authError)
+      );
+
+      // Mock the error formatting utility
+      spyOn(ErrorUtils, 'formatServiceError').and.returnValue(formattedError);
+
+      // Execute and verify error handling
+      await expectAsync(
+        service.register({
+          email: 'existing@example.com',
+          password: 'password123',
+          firstName: 'John',
+          lastName: 'Doe',
+        })
+      ).toBeRejectedWith(formattedError);
+
+      expect(authProviderSpy.createUserWithEmailAndPassword).toHaveBeenCalled();
+      expect(authProviderSpy.updateProfile).not.toHaveBeenCalled(); // Should not be called after error
+      expect(ErrorUtils.formatServiceError).toHaveBeenCalledWith(
+        authError,
+        'Error creating user account'
+      );
+    });
+
+    it('should handle error when updating user profile', async () => {
+      // Setup mock user and error cases
+      const mockUser = { uid: 'new-user-123' };
+      const mockUserCredential = { user: mockUser };
+      const profileError = new Error('Profile update failed');
+      const formattedError = {
+        type: ErrorType.VALIDATION,
+        message: 'Formatted profile error',
+        originalError: profileError,
+      };
+
+      // Reset and reconfigure spies for this test
+      authProviderSpy.createUserWithEmailAndPassword.calls.reset();
+      authProviderSpy.updateProfile.calls.reset();
+
+      authProviderSpy.createUserWithEmailAndPassword.and.returnValue(
+        Promise.resolve(mockUserCredential as UserCredential)
+      );
+      authProviderSpy.updateProfile.and.returnValue(
+        Promise.reject(profileError)
+      );
+      spyOn(ErrorUtils, 'formatServiceError').and.returnValue(formattedError);
+
+      // Execute and verify profile error handling
+      await expectAsync(
+        service.register({
+          email: 'valid@example.com',
+          password: 'password123',
+          firstName: 'John',
+          lastName: 'Doe',
+        })
+      ).toBeRejectedWith(formattedError);
+
+      expect(authProviderSpy.createUserWithEmailAndPassword).toHaveBeenCalled();
+      expect(authProviderSpy.updateProfile).toHaveBeenCalled();
+      expect(ErrorUtils.formatServiceError).toHaveBeenCalledWith(
+        profileError,
+        'Error creating user account'
       );
     });
   });
