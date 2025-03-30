@@ -37,7 +37,7 @@ describe('ActivityTagService', () => {
     it('should return activity tags when HTTP call is successful', async () => {
       const mockActivityTags: ActivityTag[] = [
         { id: 1, name: 'Hiking', promptText: 'Hiking prompt' },
-        { id: 2, name: 'Swimming', promptText: 'Swimming prompt' },
+        { id: 2, name: 'Museum', promptText: 'Museum prompt' },
       ];
 
       httpClientSpy.get.and.returnValue(of(mockActivityTags));
