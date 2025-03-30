@@ -34,7 +34,7 @@ export class PlanningComponent {
 
   public readonly dayPlans = computed(() => {
     const planning = this.planningService.planning();
-    return planning?.dayPlans;
+    return planning?.dayPlans ?? [];
   });
 
   public resultTemplate!: TemplateRef<unknown>;
