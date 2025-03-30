@@ -47,6 +47,7 @@
       mat-flat-button
       class="w-full"
       i18n="@@auth.create-account.create-account"
+      [disabled]="submitting()"
       (click)="createAccount()"
     >
       Créer un compte

@@ -9,12 +9,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterModule } from '@angular/router';
+import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
+import { LoggerService } from '../../../../core/services/logger.service';
+import { SnackbarService } from '../../../../core/services/snackbar.service';
 import {
   ActivityTag,
   ActivityTagView,
-} from '../../../../core/models/activity-tag.model';
-import { ActivityTagService } from '../../../../core/services/activity-tag.service';
-import { LoggerService } from '../../../../core/services/logger.service';
+} from '../../../activity-tag/models/activity-tag.model';
+import { ActivityTagService } from '../../../activity-tag/services/activity-tag.service';
 import { AppUser } from '../../models/app-user.model';
 import { AuthService } from '../../services/auth.service';
 
@@ -23,6 +25,7 @@ import { AuthService } from '../../services/auth.service';
   imports: [MatButtonModule, MatChipsModule, MatIconModule, RouterModule],
   templateUrl: './account-created.component.html',
   styleUrl: './account-created.component.scss',
+  providers: [ActivityTagService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AccountCreatedComponent implements OnInit {
@@ -35,6 +38,8 @@ export class AccountCreatedComponent implements OnInit {
   constructor(
     private readonly activityTagService: ActivityTagService,
     private readonly logger: LoggerService,
+    private readonly errorHandler: ErrorHandlerService,
+    private readonly snackbar: SnackbarService,
     private readonly router: Router,
     authService: AuthService
   ) {
@@ -49,7 +54,11 @@ export class AccountCreatedComponent implements OnInit {
     const user = this.appUser();
     if (!user) {
       this.logger.error('User is null or undefined');
+      this.snackbar.openError(
+        'Erreur lors de la sauvegarde de vos préférences.'
+      );
     }
+
     this.router.navigate(['/']);
   }
 
@@ -67,8 +76,7 @@ export class AccountCreatedComponent implements OnInit {
         this.errorMessage.set(
           "Erreur lors du chargement des catégories d'activités."
         );
-        // TODO: replace with Global error handling
-        this.logger.error('Error fetching Activity Tags', err);
+        this.errorHandler.handleError(err, 'fetching activity tags');
       });
   }
 

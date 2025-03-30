@@ -14,7 +14,7 @@
         formControlName="destination"
         [matAutocomplete]="auto"
       />
-      @if (searchForm.get("destination")?.value) {
+      @if (searchForm.get('destination')?.value) {
         <button
           matSuffix
           mat-icon-button
@@ -101,7 +101,7 @@
     </div>
 
     <mat-chip-listbox formControlName="activities" multiple class="mb-8">
-      @for (tag of activityTags; track tag) {
+      @for (tag of activityTags(); track tag) {
         <mat-chip-option [value]="tag">{{ tag.name }}</mat-chip-option>
       }
     </mat-chip-listbox>

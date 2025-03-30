@@ -1,10 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
@@ -29,10 +35,12 @@ import {
   startWith,
   switchMap,
 } from 'rxjs';
-import { ActivityTag } from '../../../../core/models/activity-tag.model';
-import { LoggerService } from '../../../../core/services/logger.service';
+import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
 import { Destination } from '../../../../features/search/models/destination.model';
 import { SearchRequest } from '../../../../features/search/models/search-request.model';
+import { ActivityTag } from '../../../activity-tag/models/activity-tag.model';
+import { ActivityTagService } from '../../../activity-tag/services/activity-tag.service';
+import { PlanningService } from '../../../planning/services/planning.service';
 import { DestinationService } from '../../services/destination.service';
 
 @Component({
@@ -55,28 +63,25 @@ import { DestinationService } from '../../services/destination.service';
   providers: [
     { provide: DateAdapter, useClass: NativeDateAdapter },
     DestinationService,
+    ActivityTagService,
   ],
   templateUrl: './mobile-search-dialog.component.html',
   styleUrl: './mobile-search-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MobileSearchDialogComponent implements OnInit {
+  public isLoading = signal<boolean>(false);
+
   public minDate = new Date();
 
   public filteredOptions: Observable<Destination[]> | undefined;
 
-  public activityTags: ActivityTag[] = [
-    { id: 21910, name: 'Art et culture', promptText: '' },
-    { id: 21911, name: 'Gastronomie', promptText: '' },
-    { id: 21909, name: 'Activités sportives', promptText: '' },
-    { id: 21915, name: 'Cours et ateliers', promptText: '' },
-    { id: 21912, name: 'Tickets et passes', promptText: '' },
-  ];
+  public activityTags = signal<ActivityTag[]>([]);
 
   public readonly searchForm = new FormGroup({
-    startDate: new FormControl<Date | null>(null),
-    endDate: new FormControl<Date | null>(null),
-    destination: new FormControl<string | Destination>(''),
+    startDate: new FormControl<Date | null>(null, Validators.required),
+    endDate: new FormControl<Date | null>(null, Validators.required),
+    destination: new FormControl<string | Destination>('', Validators.required),
     activities: new FormControl<ActivityTag[]>([]),
     startTime: new FormControl<Date>(new Date()),
     endTime: new FormControl<Date>(new Date()),
@@ -84,9 +89,11 @@ export class MobileSearchDialogComponent implements OnInit {
 
   constructor(
     private readonly destinationService: DestinationService,
+    private readonly planningService: PlanningService,
     private readonly router: Router,
-    private readonly dialogRef: MatDialogRef<MobileSearchDialogComponent>,
-    private readonly logger: LoggerService
+    private readonly errorHandler: ErrorHandlerService,
+    private readonly activityTagService: ActivityTagService,
+    private readonly dialogRef: MatDialogRef<MobileSearchDialogComponent>
   ) {}
 
   public ngOnInit(): void {
@@ -98,35 +105,58 @@ export class MobileSearchDialogComponent implements OnInit {
         startWith(''),
         switchMap((value) => {
           const query = typeof value === 'string' ? value : '';
-          return query ? this._filter(query as string) : of([]);
+          return query ? this.filter(query) : of([]);
         })
       );
+
+    this.initActivityTags();
   }
 
-  public submitSearch(): void {
+  public async submitSearch(): Promise<void> {
     if (this.searchForm.invalid) {
       return;
     }
 
     const request = this.searchForm.value as SearchRequest;
 
-    this.router.routeReuseStrategy.shouldReuseRoute = function () {
-      return false;
-    };
+    try {
+      this.isLoading.set(true);
+      this.searchForm.disable();
 
-    this.router.navigate(['/planning'], {
-      state: {
-        request,
-      },
-    });
-    this.dialogRef.close();
+      await this.planningService.getDayPlansForRequest(request);
+
+      this.router.routeReuseStrategy.shouldReuseRoute = function () {
+        return false;
+      };
+
+      this.router.navigate(['/planning']);
+      this.dialogRef.close();
+    } catch (error) {
+      this.errorHandler.handleError(error, 'creating planning', {
+        showSnackbar: true,
+      });
+    } finally {
+      this.isLoading.set(false);
+      this.searchForm.enable();
+    }
   }
 
   public displayFn(value: Destination): string {
     return value.name;
   }
 
-  private async _filter(name: string): Promise<Destination[]> {
+  private initActivityTags(): void {
+    this.activityTagService
+      .getActivityTags()
+      .then((tags) => this.activityTags.set(tags))
+      .catch((err: unknown) =>
+        this.errorHandler.handleError(err, 'fetching activity tags', {
+          showSnackbar: true,
+        })
+      );
+  }
+
+  private async filter(name: string): Promise<Destination[]> {
     const filterValue = name.toLowerCase();
 
     try {
@@ -135,7 +165,9 @@ export class MobileSearchDialogComponent implements OnInit {
 
       return destinations;
     } catch (error) {
-      this.logger.error('Error while fetching Destinations', error);
+      this.errorHandler.handleError(error, 'fetching destinations', {
+        showSnackbar: true,
+      });
       return [];
     }
   }
