@@ -11,12 +11,16 @@ describe('ActivityTagService', () => {
   let httpClientSpy: jasmine.SpyObj<HttpClient>;
   let formatServiceErrorSpy: jasmine.Spy;
 
-  const mockApiUrl = 'http://localhost:8080/v1/activity-tags';
+  // Define apiUrl as a constant or within beforeEach
+  const apiBase = 'http://localhost:8080';
+  const apiEndpoint = '/v1/activity-tags';
+  let expectedUrl: string;
 
   beforeEach(() => {
     httpClientSpy = jasmine.createSpyObj('HttpClient', ['get']);
 
     formatServiceErrorSpy = spyOn(ErrorUtils, 'formatServiceError');
+    expectedUrl = `${apiBase}${apiEndpoint}`;
 
     TestBed.configureTestingModule({
       providers: [
@@ -25,7 +29,7 @@ describe('ActivityTagService', () => {
         { provide: HttpClient, useValue: httpClientSpy },
         {
           provide: 'environment',
-          useValue: { apiUrl: 'https://localhost:8080' },
+          useValue: { apiUrl: apiBase },
         },
       ],
     });
@@ -44,7 +48,7 @@ describe('ActivityTagService', () => {
 
       const result = await service.getActivityTags();
 
-      expect(httpClientSpy.get).toHaveBeenCalledWith(mockApiUrl);
+      expect(httpClientSpy.get).toHaveBeenCalledWith(expectedUrl);
       expect(result).toEqual(mockActivityTags);
       expect(result.length).toBe(2);
     });

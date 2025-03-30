@@ -17,12 +17,17 @@ import { PlanningDayComponent } from '../planning-day/planning-day.component';
 })
 export class PlanningComponent {
   public readonly destination = computed(() => {
-    return this.planningService.planning()?.destination;
+    const planning = this.planningService.planning();
+    return planning?.destination ?? 'Unknown Destination';
   });
 
   public readonly date = computed(() => {
     const startDate = this.planningService.planning()?.startDate;
     const endDate = this.planningService.planning()?.endDate;
+
+    if (!startDate || !endDate) {
+      return '';
+    }
 
     return `${startDate?.toLocaleDateString('default', { month: 'long', day: '2-digit' })} - ${endDate?.getDate()}`;
   });
