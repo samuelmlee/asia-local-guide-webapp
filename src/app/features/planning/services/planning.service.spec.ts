@@ -11,7 +11,7 @@ import { DestinationType } from '../../search/models/destination-type.model';
 import { SearchRequest } from '../../search/models/search-request.model';
 import { PlanningService } from './planning.service';
 
-fdescribe('PlanningService', () => {
+describe('PlanningService', () => {
   let service: PlanningService;
   let httpClientSpy: jasmine.SpyObj<HttpClient>;
 

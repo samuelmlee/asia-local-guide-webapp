@@ -21,11 +21,11 @@ export class DestinationService {
       );
     }
 
-    const destinations$ = this.http.get<Destination[]>(
-      `${this.env.apiUrl}/destinations/autocomplete?query=${query}`
-    );
-
     try {
+      const destinations$ = this.http.get<Destination[]>(
+        `${this.env.apiUrl}/destinations/autocomplete?query=${query}`
+      );
+
       return await firstValueFrom(destinations$);
     } catch (error) {
       throw ErrorUtils.formatServiceError(
