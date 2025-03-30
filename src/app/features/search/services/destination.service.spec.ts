@@ -87,7 +87,7 @@ describe('DestinationService', () => {
       expect(result[0].name).toBe('Tokyo');
     });
 
-    fit('should handle errors and formatServiceError should rethrow http error', async () => {
+    it('should handle errors and formatServiceError should rethrow http error', async () => {
       const testError = new Error('Network error');
 
       httpClientSpy.get.and.throwError(testError);
