@@ -82,8 +82,16 @@ describe('AuthService', () => {
       // Reset TestBed for this specific test
       TestBed.resetTestingModule();
 
-      // Setup
-      const mockUser: Partial<User> = {
+      // Setup with getIdTokenResult spy on the user object
+      const mockToken: Partial<IdTokenResult> = {
+        claims: { roles: ['user', 'admin'] },
+        token: 'mock-token',
+        authTime: '2023-01-01T00:00:00.000Z',
+        expirationTime: '2023-01-02T00:00:00.000Z',
+        issuedAtTime: '2023-01-01T00:00:00.000Z',
+      };
+
+      const mockUser = {
         uid: 'test-uid',
         email: 'test@example.com',
         displayName: 'Test User',
@@ -91,31 +99,28 @@ describe('AuthService', () => {
           creationTime: '2023-01-01T12:00:00Z',
           lastSignInTime: '2023-01-02T12:00:00Z',
         },
-      };
+        // Add method to mock user
+        getIdTokenResult: () => Promise.resolve(mockToken as IdTokenResult),
+      } as unknown as User;
 
-      const mockToken: Partial<IdTokenResult> = {
-        claims: { roles: ['user', 'admin'] },
-      };
+      // Configure the spy on the user
+      spyOn(mockUser, 'getIdTokenResult').and.returnValue(
+        Promise.resolve(mockToken as IdTokenResult)
+      );
 
       // Re-create all the spies with new behavior
       httpClientSpy = jasmine.createSpyObj('HttpClient', ['get', 'post']);
-      authProviderSpy = jasmine.createSpyObj('FirebaseAuthProvider', [
-        'user',
-        'getIdTokenResult',
-      ]);
+      authProviderSpy = jasmine.createSpyObj('FirebaseAuthProvider', ['user']);
       loggerSpy = jasmine.createSpyObj('LoggerService', [
         'info',
         'warning',
         'error',
       ]);
 
-      // Configure the auth provider
-      authProviderSpy.user.and.returnValue(of(mockUser as User));
-      authProviderSpy.getIdTokenResult.and.returnValue(
-        Promise.resolve(mockToken as IdTokenResult)
-      );
+      // Configure the auth provider - pass the user with working getIdTokenResult
+      authProviderSpy.user.and.returnValue(of(mockUser));
 
-      // Reconfigure TestBed
+      // Configure TestBed
       TestBed.configureTestingModule({
         providers: [
           AuthService,
@@ -126,14 +131,14 @@ describe('AuthService', () => {
         ],
       });
 
-      // Get new service instance
+      // Get the service
       service = TestBed.inject(AuthService);
 
-      // Initialize by calling getter
+      // Call the getter to initialize the signal
       service.appUser();
 
       // Wait for async operations
-      await waitForAsyncOperations();
+      await new Promise((resolve) => setTimeout(resolve, 0));
 
       // Assert
       expect(service.appUser()).toBeTruthy();
@@ -143,15 +148,9 @@ describe('AuthService', () => {
       expect(service.appUser()?.roles).toEqual(['user', 'admin']);
       expect(service.appUser()?.createdAt).toEqual(jasmine.any(Date));
       expect(service.appUser()?.lastLoginAt).toEqual(jasmine.any(Date));
+
+      // Verify the user's getIdTokenResult was called with force refresh
+      expect(mockUser.getIdTokenResult).toHaveBeenCalledWith(true);
     });
-
-    // Additional tests follow the same pattern:
-    // 1. Reset TestBed if needed for the test
-    // 2. Setup test-specific spies and mocks
-    // 3. Reconfigure TestBed if needed
-    // 4. Get service instance
-    // 5. Test behavior
   });
-
-  // More tests for checkEmail, register, etc.
 });

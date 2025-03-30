@@ -34,12 +34,14 @@ export class AuthService {
 
   public get appUser(): Signal<AppUser | null | undefined> {
     if (!this._appUser) {
-      this._appUser = runInInjectionContext(this.injector, () =>
-        this.initAppUser()
+      // Run in injection context and set _appUser
+      runInInjectionContext(
+        this.injector,
+        () => (this._appUser = this.initAppUser())
       );
     }
 
-    return this._appUser;
+    return this._appUser!;
   }
 
   public async checkEmail(email: string): Promise<EmailCheckResult> {
