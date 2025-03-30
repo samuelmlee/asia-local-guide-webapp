@@ -3,7 +3,10 @@ import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { IdTokenResult, User } from '@angular/fire/auth';
 import { of } from 'rxjs';
+import { ErrorType } from '../../../core/models/error-type.enum';
 import { LoggerService } from '../../../core/services/logger.service';
+import { ErrorUtils } from '../../../core/utils/error.utils';
+import { EmailCheckResult } from '../models/email-check-result';
 import { AuthService } from './auth.service';
 import { FirebaseAuthProvider } from './firebase-auth.provider';
 
@@ -151,6 +154,73 @@ describe('AuthService', () => {
 
       // Verify the user's getIdTokenResult was called with force refresh
       expect(mockUser.getIdTokenResult).toHaveBeenCalledWith(true);
+    });
+  });
+
+  describe('checkEmail', () => {
+    it('should throw validation error if email is empty', async () => {
+      await expectAsync(service.checkEmail('')).toBeRejectedWith({
+        type: ErrorType.VALIDATION,
+        message: 'Email is required',
+        originalError: new Error('Email is required'),
+      });
+
+      expect(httpClientSpy.post).not.toHaveBeenCalled();
+    });
+
+    it('should call API and return that email exists', async () => {
+      const mockResponse: EmailCheckResult = {
+        email: 'existing@example.com',
+        exists: true,
+      };
+
+      httpClientSpy.post.and.returnValue(of(mockResponse));
+
+      const result = await service.checkEmail('existing@example.com');
+
+      expect(httpClientSpy.post).toHaveBeenCalledWith(
+        jasmine.stringContaining('/auth/check-email'),
+        { email: 'existing@example.com' }
+      );
+      expect(result).toEqual(mockResponse);
+      expect(result.exists).toBeTrue();
+    });
+
+    it('should call API and return that email does not exist', async () => {
+      const mockResponse: EmailCheckResult = {
+        email: 'new@example.com',
+        exists: false,
+      };
+
+      httpClientSpy.post.and.returnValue(of(mockResponse));
+
+      const result = await service.checkEmail('new@example.com');
+
+      expect(httpClientSpy.post).toHaveBeenCalledWith(
+        jasmine.stringContaining('/auth/check-email'),
+        { email: 'new@example.com' }
+      );
+      expect(result).toEqual(mockResponse);
+      expect(result.exists).toBeFalse();
+    });
+
+    it('should format service errors correctly', async () => {
+      const mockError = new Error('Network error');
+      const formattedError = {
+        type: ErrorType.NETWORK,
+        message: 'Formatted error',
+        originalError: mockError,
+      };
+
+      httpClientSpy.post.and.throwError(mockError);
+
+      spyOn(ErrorUtils, 'formatServiceError').and.returnValue(formattedError);
+
+      await expectAsync(service.checkEmail('test@example.com')).toBeRejected();
+      expect(ErrorUtils.formatServiceError).toHaveBeenCalledWith(
+        mockError,
+        'Error checking email'
+      );
     });
   });
 });
