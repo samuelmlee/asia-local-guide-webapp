@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
+import { Environment } from '../../../core/tokens/environment.token';
 import { ErrorUtils } from '../../../core/utils/error.utils';
 import { ActivityTag } from '../models/activity-tag.model';
 import { ActivityTagService } from './activity-tag.service';
@@ -11,30 +10,24 @@ describe('ActivityTagService', () => {
   let httpClientSpy: jasmine.SpyObj<HttpClient>;
   let formatServiceErrorSpy: jasmine.Spy;
 
-  // Define apiUrl as a constant or within beforeEach
-  const apiBase = 'http://localhost:8080';
-  const apiEndpoint = '/v1/activity-tags';
+  // Define API constants
+  const mockEnvironment: Environment = {
+    apiUrl: 'http://localhost:8080',
+    production: false,
+  };
+  const apiEndpoint = '/activity-tags';
   let expectedUrl: string;
 
   beforeEach(() => {
+    // Create spies
     httpClientSpy = jasmine.createSpyObj('HttpClient', ['get']);
-
     formatServiceErrorSpy = spyOn(ErrorUtils, 'formatServiceError');
-    expectedUrl = `${apiBase}${apiEndpoint}`;
 
-    TestBed.configureTestingModule({
-      providers: [
-        provideExperimentalZonelessChangeDetection(),
-        ActivityTagService,
-        { provide: HttpClient, useValue: httpClientSpy },
-        {
-          provide: 'environment',
-          useValue: { apiUrl: apiBase },
-        },
-      ],
-    });
+    // Set expected URL
+    expectedUrl = `${mockEnvironment.apiUrl}${apiEndpoint}`;
 
-    service = TestBed.inject(ActivityTagService);
+    // Create service instance with mocked dependencies
+    service = new ActivityTagService(httpClientSpy, mockEnvironment);
   });
 
   describe('getActivityTags', () => {
@@ -61,23 +54,17 @@ describe('ActivityTagService', () => {
         originalError: testError,
       };
 
-      // Configure the HTTP call to throw an error
-      httpClientSpy.get.and.callFake(() => {
-        throw testError;
-      });
-
+      // Configure HTTP to throw error using throwError
+      httpClientSpy.get.and.returnValue(throwError(() => testError));
       formatServiceErrorSpy.and.returnValue(formattedError);
 
-      try {
-        await service.getActivityTags();
-        fail('Expected an error to be thrown');
-      } catch (error) {
-        expect(ErrorUtils.formatServiceError).toHaveBeenCalledWith(
-          testError,
-          'Error fetching activity tags'
-        );
-        expect(error).toBe(formattedError);
-      }
+      await expectAsync(service.getActivityTags()).toBeRejectedWith(
+        formattedError
+      );
+      expect(ErrorUtils.formatServiceError).toHaveBeenCalledWith(
+        testError,
+        'Error fetching activity tags'
+      );
     });
   });
 });

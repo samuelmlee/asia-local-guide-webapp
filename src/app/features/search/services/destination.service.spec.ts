@@ -1,6 +1,4 @@
 import { HttpClient } from '@angular/common/http';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ErrorType } from '../../../core/models/error-type.enum';
@@ -18,15 +16,7 @@ describe('DestinationService', () => {
     httpClientSpy = jasmine.createSpyObj('HttpClient', ['get']);
     formatServiceErrorSpy = spyOn(ErrorUtils, 'formatServiceError');
 
-    TestBed.configureTestingModule({
-      providers: [
-        DestinationService,
-        { provide: HttpClient, useValue: httpClientSpy },
-        provideExperimentalZonelessChangeDetection(),
-      ],
-    });
-
-    service = TestBed.inject(DestinationService);
+    service = new DestinationService(httpClientSpy, environment);
   });
 
   it('should be created', () => {
