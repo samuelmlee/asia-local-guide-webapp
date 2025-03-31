@@ -1,14 +1,9 @@
 <div class="flex flex-col pt-16 px-11 gap-y-5">
-  <div class="text-base font-normal">
-    <div>{{ email() }}</div>
-    <a routerLink="/auth-entry" class="cursor-pointer hover:underline">
-      <div i18n="@@auth.create-account.user-other-email">
-        utiliser un autre email
-      </div>
-    </a>
+  <div i18n="@@auth.create-account.create-account" class="text-xl font-bold">
+    Créer votre compte
   </div>
 
-  <div class="text-xl font-bold">Créer votre compte</div>
+  <app-account-email [email]="email()"></app-account-email>
 
   <form [formGroup]="createAccountForm">
     <div class="flex gap-x-4">

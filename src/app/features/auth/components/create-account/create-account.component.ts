@@ -13,6 +13,7 @@ import { Router, RouterModule } from '@angular/router';
 import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
 import { CreateAccountRequestDTO } from '../../models/create-account-request-dto.model';
 import { AuthService } from '../../services/auth.service';
+import { ResetEmailComponent } from '../reset-email/reset-email.component';
 
 @Component({
   selector: 'app-create-account',
@@ -23,6 +24,7 @@ import { AuthService } from '../../services/auth.service';
     ReactiveFormsModule,
     FormsModule,
     RouterModule,
+    ResetEmailComponent,
   ],
   templateUrl: './create-account.component.html',
   styleUrl: './create-account.component.scss',

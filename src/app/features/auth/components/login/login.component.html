@@ -1,1 +1,30 @@
-<p>login works!</p>
+<div class="flex flex-col pt-16 px-11 gap-y-5">
+  <app-account-email [email]="email()"></app-account-email>
+
+  <div i18n="@@auth.login.welcome" class="text-xl font-bold">Bienvenue!</div>
+
+  <mat-form-field class="w-full">
+    <mat-label i18n="@@auth.login.password">Mot de passe</mat-label>
+    <input
+      type="password"
+      matInput
+      [formControl]="passwordControl"
+      [disableControl]="submitting()"
+    />
+    @if (passwordControl.hasError('required')) {
+      <mat-error i18n="@@auth.login.password-required"
+        >Mot de passe est <strong>requis</strong></mat-error
+      >
+    }
+  </mat-form-field>
+
+  <button
+    mat-flat-button
+    class="w-full"
+    i18n="@@auth.login.login"
+    [disabled]="submitting()"
+    (click)="submitPassword()"
+  >
+    Se connecter
+  </button>
+</div>
