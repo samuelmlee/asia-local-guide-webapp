@@ -1,6 +1,3 @@
-import { TestBed } from '@angular/core/testing';
-
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { createAppError } from '../models/app-error.model';
 import { ErrorType } from '../models/error-type.enum';
 import { ErrorHandlerService } from './error-handler.service';
@@ -13,25 +10,11 @@ describe('ErrorHandlerService', () => {
   let snackbarSpy: jasmine.SpyObj<SnackbarService>;
 
   beforeEach(() => {
-    const loggerSpyObj = jasmine.createSpyObj('LoggerService', ['error']);
-    const snackbarSpyObj = jasmine.createSpyObj('SnackbarService', [
-      'openError',
-    ]);
+    // Create fresh spies for each test
+    loggerSpy = jasmine.createSpyObj('LoggerService', ['error']);
+    snackbarSpy = jasmine.createSpyObj('SnackbarService', ['openError']);
 
-    TestBed.configureTestingModule({
-      providers: [
-        ErrorHandlerService,
-        { provide: LoggerService, useValue: loggerSpyObj },
-        { provide: SnackbarService, useValue: snackbarSpyObj },
-        provideExperimentalZonelessChangeDetection(),
-      ],
-    });
-
-    service = TestBed.inject(ErrorHandlerService);
-    loggerSpy = TestBed.inject(LoggerService) as jasmine.SpyObj<LoggerService>;
-    snackbarSpy = TestBed.inject(
-      SnackbarService
-    ) as jasmine.SpyObj<SnackbarService>;
+    service = new ErrorHandlerService(loggerSpy, snackbarSpy);
   });
 
   it('should be created', () => {
