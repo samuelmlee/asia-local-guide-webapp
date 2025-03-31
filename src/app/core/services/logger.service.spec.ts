@@ -1,17 +1,7 @@
-import { TestBed } from '@angular/core/testing';
-
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { LoggerService } from './logger.service';
 
 describe('LoggerService', () => {
-  let service: LoggerService;
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
-    });
-    service = TestBed.inject(LoggerService);
-  });
+  const service: LoggerService = new LoggerService();
 
   it('should be created', () => {
     expect(service).toBeTruthy();
