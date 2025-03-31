@@ -65,9 +65,9 @@ export class SidenavContentComponent implements OnInit {
     });
   }
 
-  public singOut(): void {
+  public async signOut(): Promise<void> {
     try {
-      this.authService.signOut();
+      await this.authService.signOut();
       this.closeSidenav.emit();
     } catch (error) {
       this.errorHandler.handleError(error, 'Error signing out', {
