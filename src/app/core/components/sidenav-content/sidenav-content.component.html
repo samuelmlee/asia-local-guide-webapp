@@ -7,15 +7,35 @@
     ></mat-icon>
   </div>
 
-  <a routerLink="/auth-entry">
-    <button
-      mat-flat-button
-      i18n="@@core.sidenav-content.login"
-      class="w-full my-2"
-    >
-      Connexion / Inscription
-    </button>
-  </a>
+  @if (userName?.(); as userName) {
+    <div class="flex items-center my-2">
+      <div class="mr-2">{{ userName.initials }}</div>
+      <div class="text-sm font-bold">{{ userName.name }}</div>
+    </div>
+  }
 
-  <app-language-selector></app-language-selector>
+  <div class="flex flex-col mt-6 gap-y-2">
+    <app-language-selector></app-language-selector>
+
+    @if (userName?.()) {
+      <button
+        mat-flat-button
+        i18n="@@core.sidenav-content.logout"
+        class="w-full my-2"
+        (click)="signOut()"
+      >
+        Déconnexion
+      </button>
+    } @else {
+      <a routerLink="/auth-entry">
+        <button
+          mat-flat-button
+          i18n="@@core.sidenav-content.login"
+          class="w-full my-2"
+        >
+          Connexion / Inscription
+        </button>
+      </a>
+    }
+  </div>
 </div>

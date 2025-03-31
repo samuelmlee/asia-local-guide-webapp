@@ -74,4 +74,11 @@ export class FirebaseAuthProvider {
       signInWithEmailAndPassword(this.auth, email, password)
     );
   }
+
+  /**
+   * Sign out the user
+   */
+  public signOut(): Promise<void> {
+    return this.ngZone.run(() => this.auth.signOut());
+  }
 }

@@ -98,8 +98,16 @@ export class AuthService {
     } catch (error) {
       throw ErrorUtils.formatServiceError(
         error,
-        'Error loging with user credentials'
+        'Error logging in with user credentials'
       );
+    }
+  }
+
+  public async signOut(): Promise<void> {
+    try {
+      await this.authProvider.signOut();
+    } catch (error) {
+      throw ErrorUtils.formatServiceError(error, 'Error logging out user');
     }
   }
 
