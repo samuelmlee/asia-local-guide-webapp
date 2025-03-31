@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import {
+  Inject,
   Injectable,
   Injector,
   runInInjectionContext,
@@ -7,10 +8,13 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, firstValueFrom, from, map, of, switchMap } from 'rxjs';
-import { environment } from '../../../../environments/environment';
 import { createAppError } from '../../../core/models/app-error.model';
 import { ErrorType } from '../../../core/models/error-type.enum';
 import { LoggerService } from '../../../core/services/logger.service';
+import {
+  Environment,
+  ENVIRONMENT,
+} from '../../../core/tokens/environment.token';
 import { ErrorUtils } from '../../../core/utils/error.utils';
 import { AppUser } from '../models/app-user.model';
 import { CreateAccountRequestDTO } from '../models/create-account-request-dto.model';
@@ -21,15 +25,14 @@ import { FirebaseAuthProvider } from './firebase-auth.provider';
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly env = environment;
-
   private _appUser: Signal<AppUser | null | undefined> | undefined;
 
   constructor(
     private readonly http: HttpClient,
     private readonly authProvider: FirebaseAuthProvider,
     private readonly logger: LoggerService,
-    private readonly injector: Injector
+    private readonly injector: Injector,
+    @Inject(ENVIRONMENT) private readonly env: Environment
   ) {}
 
   public get appUser(): Signal<AppUser | null | undefined> {

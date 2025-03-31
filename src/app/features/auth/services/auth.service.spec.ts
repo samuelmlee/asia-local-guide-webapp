@@ -1,10 +1,14 @@
 import { HttpClient } from '@angular/common/http';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import {
+  Injector,
+  provideExperimentalZonelessChangeDetection,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { IdTokenResult, User, UserCredential } from '@angular/fire/auth';
 import { of } from 'rxjs';
 import { ErrorType } from '../../../core/models/error-type.enum';
 import { LoggerService } from '../../../core/services/logger.service';
+import { Environment } from '../../../core/tokens/environment.token';
 import { ErrorUtils } from '../../../core/utils/error.utils';
 import { EmailCheckResult } from '../models/email-check-result';
 import { AuthService } from './auth.service';
@@ -30,20 +34,21 @@ describe('AuthService', () => {
       'error',
     ]);
 
+    const mockEnvironment: Environment = {
+      apiUrl: 'http://localhost:8080',
+      production: false,
+    };
+
     // Default return value for user observable
     authProviderSpy.user.and.returnValue(of(null));
 
-    TestBed.configureTestingModule({
-      providers: [
-        AuthService,
-        { provide: HttpClient, useValue: httpClientSpy },
-        { provide: FirebaseAuthProvider, useValue: authProviderSpy },
-        { provide: LoggerService, useValue: loggerSpy },
-        provideExperimentalZonelessChangeDetection(),
-      ],
-    });
-
-    service = TestBed.inject(AuthService);
+    service = new AuthService(
+      httpClientSpy,
+      authProviderSpy,
+      loggerSpy,
+      { get: () => null } as Injector, // Mock injector
+      mockEnvironment
+    );
   });
 
   it('should be created', () => {
@@ -76,7 +81,6 @@ describe('AuthService', () => {
     });
 
     it('should map Firebase user to AppUser when authenticated', async () => {
-      // Reset TestBed for this specific test
       TestBed.resetTestingModule();
 
       // Setup with getIdTokenResult spy on the user object
