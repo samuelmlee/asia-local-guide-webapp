@@ -28,6 +28,7 @@ describe('AuthService', () => {
       'updateProfile',
       'getIdTokenResult',
       'signInWithEmailAndPassword',
+      'signOut',
     ]);
     loggerSpy = jasmine.createSpyObj('LoggerService', [
       'info',
@@ -543,7 +544,43 @@ describe('AuthService', () => {
       // Verify the error was formatted correctly
       expect(ErrorUtils.formatServiceError).toHaveBeenCalledWith(
         authError,
-        'Error loging with user credentials'
+        'Error logging in with user credentials'
+      );
+    });
+  });
+
+  describe('signOut', () => {
+    it('should call Firebase auth provider signOut method when successful', async () => {
+      // Configure the spy to resolve successfully
+      authProviderSpy.signOut.and.returnValue(Promise.resolve());
+
+      // Call the method
+      await service.signOut();
+
+      // Verify the provider was called
+      expect(authProviderSpy.signOut).toHaveBeenCalled();
+    });
+
+    it('should format and re-throw errors that occur during sign out', async () => {
+      // Set up a sign out error
+      const signOutError = new Error('Failed to sign out');
+      const formattedError = {
+        type: ErrorType.UNKNOWN,
+        message: 'Formatted sign out error',
+        originalError: signOutError,
+      };
+
+      // Configure spies
+      authProviderSpy.signOut.and.returnValue(Promise.reject(signOutError));
+      spyOn(ErrorUtils, 'formatServiceError').and.returnValue(formattedError);
+
+      // Call the method and expect it to fail
+      await expectAsync(service.signOut()).toBeRejectedWith(formattedError);
+
+      // Verify the error was formatted correctly
+      expect(ErrorUtils.formatServiceError).toHaveBeenCalledWith(
+        signOutError,
+        'Error logging out user'
       );
     });
   });
