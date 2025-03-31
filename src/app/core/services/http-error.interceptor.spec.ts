@@ -1,32 +1,16 @@
 import {
   HttpErrorResponse,
   HttpHandler,
-  HttpInterceptorFn,
   HttpRequest,
   HttpResponse,
 } from '@angular/common/http';
-import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { AppError } from '../models/app-error.model';
 import { ErrorType } from '../models/error-type.enum';
 import { httpErrorInterceptor } from './http-error.interceptor';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 describe('httpErrorInterceptor', () => {
-  const interceptor: HttpInterceptorFn = (req, next) =>
-    TestBed.runInInjectionContext(() => httpErrorInterceptor(req, next));
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
-    });
-  });
-
-  it('should be created', () => {
-    expect(interceptor).toBeTruthy();
-  });
-
-  // Helper function to create a mock HttpHandler
+  // Create a mock HttpHandler
   function createMockHandler(
     status: number,
     statusText: string,
