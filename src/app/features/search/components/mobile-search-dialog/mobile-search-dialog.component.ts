@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -46,7 +46,7 @@ import { DestinationService } from '../../services/destination.service';
 @Component({
   selector: 'app-mobile-search-dialog',
   imports: [
-    CommonModule,
+    AsyncPipe,
     MatDatepickerModule,
     MatTimepickerModule,
     MatChipsModule,

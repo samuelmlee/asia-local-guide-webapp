@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -12,7 +12,7 @@ import { DayActivity } from '../../models/day-activity.model';
 
 @Component({
   selector: 'app-planning-activity',
-  imports: [CommonModule, MatIconModule, MatButtonModule],
+  imports: [MatIconModule, MatButtonModule, DecimalPipe, DatePipe],
   templateUrl: './planning-activity.component.html',
   styleUrl: './planning-activity.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
