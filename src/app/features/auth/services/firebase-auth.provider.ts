@@ -5,6 +5,7 @@ import {
   User,
   UserCredential,
   createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   updateProfile,
   user,
 } from '@angular/fire/auth';
@@ -56,5 +57,21 @@ export class FirebaseAuthProvider {
     forceRefresh = false
   ): Promise<IdTokenResult> {
     return this.ngZone.run(() => user.getIdTokenResult(forceRefresh));
+  }
+
+  /**
+   *
+   * @param email
+   * @param password
+   * @returns Promise<UserCredential>
+   */
+
+  public signInWithEmailAndPassword(
+    email: string,
+    password: string
+  ): Promise<UserCredential> {
+    return this.ngZone.run(() =>
+      signInWithEmailAndPassword(this.auth, email, password)
+    );
   }
 }

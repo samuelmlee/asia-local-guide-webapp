@@ -82,6 +82,27 @@ export class AuthService {
     }
   }
 
+  public async signInWithEmailAndPassword(
+    email: string,
+    password: string
+  ): Promise<void> {
+    if (!email?.length || !password?.length) {
+      throw createAppError(
+        ErrorType.VALIDATION,
+        'Email and password are required'
+      );
+    }
+
+    try {
+      await this.authProvider.signInWithEmailAndPassword(email, password);
+    } catch (error) {
+      throw ErrorUtils.formatServiceError(
+        error,
+        'Error loging with user credentials'
+      );
+    }
+  }
+
   private initAppUser(): Signal<AppUser | null | undefined> {
     const appUser$ = this.authProvider.user().pipe(
       switchMap((user) => {

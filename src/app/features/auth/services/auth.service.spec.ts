@@ -27,6 +27,7 @@ describe('AuthService', () => {
       'createUserWithEmailAndPassword',
       'updateProfile',
       'getIdTokenResult',
+      'signInWithEmailAndPassword',
     ]);
     loggerSpy = jasmine.createSpyObj('LoggerService', [
       'info',
@@ -468,6 +469,81 @@ describe('AuthService', () => {
       expect(ErrorUtils.formatServiceError).toHaveBeenCalledWith(
         profileError,
         'Error creating user account'
+      );
+    });
+  });
+
+  describe('signInWithEmailAndPassword', () => {
+    it('should throw validation error if email is missing', async () => {
+      await expectAsync(
+        service.signInWithEmailAndPassword('', 'password123')
+      ).toBeRejectedWith(
+        jasmine.objectContaining({
+          type: ErrorType.VALIDATION,
+          message: jasmine.stringMatching(/Email and password are required/),
+        })
+      );
+
+      // Verify the auth provider was never called
+      expect(authProviderSpy.signInWithEmailAndPassword).not.toHaveBeenCalled();
+    });
+
+    it('should throw validation error if password is missing', async () => {
+      await expectAsync(
+        service.signInWithEmailAndPassword('test@example.com', '')
+      ).toBeRejectedWith(
+        jasmine.objectContaining({
+          type: ErrorType.VALIDATION,
+          message: jasmine.stringMatching(/Email and password are required/),
+        })
+      );
+
+      expect(authProviderSpy.signInWithEmailAndPassword).not.toHaveBeenCalled();
+    });
+
+    it('should call Firebase auth provider with correct credentials when successful', async () => {
+      // Configure the spy to resolve successfully
+      authProviderSpy.signInWithEmailAndPassword.and.returnValue(
+        Promise.resolve({} as UserCredential)
+      );
+
+      // Call the method
+      await service.signInWithEmailAndPassword(
+        'user@example.com',
+        'securePass123'
+      );
+
+      // Verify the provider was called with correct arguments
+      expect(authProviderSpy.signInWithEmailAndPassword).toHaveBeenCalledWith(
+        'user@example.com',
+        'securePass123'
+      );
+    });
+
+    it('should format and re-throw authentication errors', async () => {
+      // Set up an auth error
+      const authError = new Error('Invalid credentials');
+      const formattedError = {
+        type: ErrorType.UNAUTHORIZED,
+        message: 'Authentication failed',
+        originalError: authError,
+      };
+
+      // Configure spies
+      authProviderSpy.signInWithEmailAndPassword.and.returnValue(
+        Promise.reject(authError)
+      );
+      spyOn(ErrorUtils, 'formatServiceError').and.returnValue(formattedError);
+
+      // Call the method and expect it to fail
+      await expectAsync(
+        service.signInWithEmailAndPassword('user@example.com', 'wrongPassword')
+      ).toBeRejectedWith(formattedError);
+
+      // Verify the error was formatted correctly
+      expect(ErrorUtils.formatServiceError).toHaveBeenCalledWith(
+        authError,
+        'Error loging with user credentials'
       );
     });
   });
