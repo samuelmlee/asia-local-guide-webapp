@@ -1,17 +1,21 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { environment } from '../../../../environments/environment';
 import { createAppError } from '../../../core/models/app-error.model';
 import { ErrorType } from '../../../core/models/error-type.enum';
+import {
+  Environment,
+  ENVIRONMENT,
+} from '../../../core/tokens/environment.token';
 import { ErrorUtils } from '../../../core/utils/error.utils';
 import { Destination } from '../models/destination.model';
 
 @Injectable()
 export class DestinationService {
-  private env = environment;
-
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    @Inject(ENVIRONMENT) private readonly env: Environment
+  ) {}
 
   public async getDestinationsForQuery(query: string): Promise<Destination[]> {
     if (!query?.length) {
