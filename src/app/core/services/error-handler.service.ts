@@ -7,7 +7,9 @@ export interface ErrorHanderOptions {
   notify?: boolean;
 }
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class ErrorHandlerService {
   constructor(
     private readonly logger: LoggerService,

@@ -54,14 +54,15 @@ export class LoginComponent {
   public async submitPassword(): Promise<void> {
     const password = this.passwordControl.value;
 
+    if (!password) {
+      return;
+    }
+
     try {
       this.submitting.set(true);
       this.passwordControl.disable();
 
-      await this.authService.signInWithEmailAndPassword(
-        this.email(),
-        password!
-      );
+      await this.authService.signInWithEmailAndPassword(this.email(), password);
 
       this.router.navigate(['/']);
     } catch (error) {
