@@ -12,6 +12,7 @@ import { RouterLink } from '@angular/router';
 import { AppUser } from '../../../features/auth/models/app-user.model';
 import { AuthService } from '../../../features/auth/services/auth.service';
 import { ErrorHandlerService } from '../../services/error-handler.service';
+import { NotificationService } from '../../services/notification.service';
 import { LanguageSelectorComponent } from '../language-selector/language-selector.component';
 
 interface UserNameView {
@@ -40,7 +41,8 @@ export class SidenavContentComponent implements OnInit {
 
   constructor(
     private readonly authService: AuthService,
-    private readonly errorHandler: ErrorHandlerService
+    private readonly errorHandler: ErrorHandlerService,
+    private readonly notification: NotificationService
   ) {
     this.appUser = this.authService.appUser;
   }
@@ -69,9 +71,10 @@ export class SidenavContentComponent implements OnInit {
     try {
       await this.authService.signOut();
       this.closeSidenav.emit();
+      this.notification.showSuccess('You have been signed out successfully');
     } catch (error) {
       this.errorHandler.handleError(error, 'Error signing out', {
-        showSnackbar: true,
+        notify: true,
       });
     }
   }

@@ -62,20 +62,21 @@ mat-option.mat-mdc-option {
   max-height: 80vh !important;
 }
 
-.success-snackbar {
+.notification-success {
   @include mat.snack-bar-overrides(
     (
-      container-shape: round,
       container-color: #4caf50,
       supporting-text-color: white,
+      button-color: white,
     )
   );
 }
-.error-snackbar {
+.notification-error {
   @include mat.snack-bar-overrides(
     (
       container-color: #f44336,
       supporting-text-color: white,
+      button-color: white,
     )
   );
 }

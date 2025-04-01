@@ -2,19 +2,19 @@ import { createAppError } from '../models/app-error.model';
 import { ErrorType } from '../models/error-type.enum';
 import { ErrorHandlerService } from './error-handler.service';
 import { LoggerService } from './logger.service';
-import { SnackbarService } from './snackbar.service';
+import { NotificationService } from './notification.service';
 
 describe('ErrorHandlerService', () => {
   let service: ErrorHandlerService;
   let loggerSpy: jasmine.SpyObj<LoggerService>;
-  let snackbarSpy: jasmine.SpyObj<SnackbarService>;
+  let notification: jasmine.SpyObj<NotificationService>;
 
   beforeEach(() => {
     // Create fresh spies for each test
     loggerSpy = jasmine.createSpyObj('LoggerService', ['error']);
-    snackbarSpy = jasmine.createSpyObj('SnackbarService', ['openError']);
+    notification = jasmine.createSpyObj('SnackbarService', ['showError']);
 
-    service = new ErrorHandlerService(loggerSpy, snackbarSpy);
+    service = new ErrorHandlerService(loggerSpy, notification);
   });
 
   it('should be created', () => {
@@ -55,7 +55,7 @@ describe('ErrorHandlerService', () => {
 
       service.handleError(error, 'testing');
 
-      expect(snackbarSpy.openError).not.toHaveBeenCalled();
+      expect(notification.showError).not.toHaveBeenCalled();
     });
 
     it('should show snackbar when showSnackbar option is true', () => {
@@ -65,18 +65,18 @@ describe('ErrorHandlerService', () => {
         null
       );
 
-      service.handleError(appError, 'testing', { showSnackbar: true });
+      service.handleError(appError, 'testing', { notify: true });
 
-      expect(snackbarSpy.openError).toHaveBeenCalledWith(appError.message);
+      expect(notification.showError).toHaveBeenCalledWith(appError.message);
     });
 
     it('should show generic error message in snackbar for non-AppError', () => {
       const error = new Error('Regular error');
       const context = 'testing';
 
-      service.handleError(error, context, { showSnackbar: true });
+      service.handleError(error, context, { notify: true });
 
-      expect(snackbarSpy.openError).toHaveBeenCalledWith(
+      expect(notification.showError).toHaveBeenCalledWith(
         `An unknown error occurred while ${context}`
       );
     });

@@ -74,7 +74,7 @@ export class CreateAccountComponent {
       this.router.navigate(['/account-created']);
     } catch (error) {
       this.errorHandler.handleError(error, 'creating account', {
-        showSnackbar: true,
+        notify: true,
       });
     } finally {
       this.submitting.set(false);

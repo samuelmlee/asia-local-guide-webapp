@@ -60,7 +60,7 @@ export class AuthEntryComponent {
       });
     } catch (error) {
       this.errorHandler.handleError(error, 'checking email', {
-        showSnackbar: true,
+        notify: true,
       });
     }
   }

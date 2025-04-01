@@ -1,19 +1,17 @@
 import { Injectable } from '@angular/core';
 import { isAppError } from '../models/app-error.model';
 import { LoggerService } from './logger.service';
-import { SnackbarService } from './snackbar.service';
+import { NotificationService } from './notification.service';
 
 export interface ErrorHanderOptions {
-  showSnackbar?: boolean;
+  notify?: boolean;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class ErrorHandlerService {
   constructor(
     private readonly logger: LoggerService,
-    private readonly snackbar: SnackbarService
+    private readonly notificationService: NotificationService
   ) {}
 
   /**
@@ -38,8 +36,8 @@ export class ErrorHandlerService {
       errorMessage = `An unknown error occurred while ${context}`;
     }
 
-    if (options?.showSnackbar) {
-      this.snackbar.openError(errorMessage);
+    if (options?.notify) {
+      this.notificationService.showError(errorMessage);
     }
   }
 }
