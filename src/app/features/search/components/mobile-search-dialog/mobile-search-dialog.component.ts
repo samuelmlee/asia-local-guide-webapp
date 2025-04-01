@@ -133,7 +133,7 @@ export class MobileSearchDialogComponent implements OnInit {
       this.dialogRef.close();
     } catch (error) {
       this.errorHandler.handleError(error, 'creating planning', {
-        showSnackbar: true,
+        notify: true,
       });
     } finally {
       this.isLoading.set(false);
@@ -151,7 +151,7 @@ export class MobileSearchDialogComponent implements OnInit {
       .then((tags) => this.activityTags.set(tags))
       .catch((err: unknown) =>
         this.errorHandler.handleError(err, 'fetching activity tags', {
-          showSnackbar: true,
+          notify: true,
         })
       );
   }
@@ -166,7 +166,7 @@ export class MobileSearchDialogComponent implements OnInit {
       return destinations;
     } catch (error) {
       this.errorHandler.handleError(error, 'fetching destinations', {
-        showSnackbar: true,
+        notify: true,
       });
       return [];
     }

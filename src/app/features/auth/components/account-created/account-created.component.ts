@@ -11,7 +11,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterModule } from '@angular/router';
 import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
 import { LoggerService } from '../../../../core/services/logger.service';
-import { SnackbarService } from '../../../../core/services/snackbar.service';
 import {
   ActivityTag,
   ActivityTagView,
@@ -39,7 +38,6 @@ export class AccountCreatedComponent implements OnInit {
     private readonly activityTagService: ActivityTagService,
     private readonly logger: LoggerService,
     private readonly errorHandler: ErrorHandlerService,
-    private readonly snackbar: SnackbarService,
     private readonly router: Router,
     authService: AuthService
   ) {
@@ -53,9 +51,9 @@ export class AccountCreatedComponent implements OnInit {
   public finishOnboarding(): void {
     const user = this.appUser();
     if (!user) {
-      this.logger.error('User is null or undefined');
-      this.snackbar.openError(
-        'Erreur lors de la sauvegarde de vos préférences.'
+      this.errorHandler.handleError(
+        new Error('No user found during onboarding'),
+        'saving preferences'
       );
     }
 
