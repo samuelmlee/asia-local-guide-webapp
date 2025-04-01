@@ -54,11 +54,11 @@ export class SnackbarNotificationService extends NotificationService {
     const config: MatSnackBarConfig = {
       duration: this.getDurationByType(type, options?.duration),
       panelClass: [`notification-${type}`],
-      horizontalPosition: options?.horizontalPosition || 'center',
-      verticalPosition: options?.verticalPosition || 'bottom',
+      horizontalPosition: options?.horizontalPosition ?? 'center',
+      verticalPosition: options?.verticalPosition ?? 'bottom',
     };
 
-    const action = options?.action || this.getDefaultActionByType(type);
+    const action = options?.action ?? this.getDefaultActionByType(type);
     this.snackBar.open(message, action, config);
   }
 

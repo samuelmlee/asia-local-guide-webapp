@@ -13,7 +13,6 @@ import { AppUser } from '../../../features/auth/models/app-user.model';
 import { AuthService } from '../../../features/auth/services/auth.service';
 import { ErrorHandlerService } from '../../services/error-handler.service';
 import { NotificationService } from '../../services/notification.service';
-import { LanguageSelectorComponent } from '../language-selector/language-selector.component';
 
 interface UserNameView {
   name: string;
@@ -22,12 +21,7 @@ interface UserNameView {
 
 @Component({
   selector: 'app-sidenav-content',
-  imports: [
-    MatIconModule,
-    MatButtonModule,
-    LanguageSelectorComponent,
-    RouterLink,
-  ],
+  imports: [MatIconModule, MatButtonModule, RouterLink],
   templateUrl: './sidenav-content.component.html',
   styleUrl: './sidenav-content.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -9,14 +9,16 @@
 
   @if (userName?.(); as userName) {
     <div class="flex items-center my-2">
-      <div class="mr-2">{{ userName.initials }}</div>
+      <div
+        class="flex items-center justify-center w-9 h-9 rounded-full bg-blue-600 text-white mr-2"
+      >
+        {{ userName.initials }}
+      </div>
       <div class="text-sm font-bold">{{ userName.name }}</div>
     </div>
   }
 
   <div class="flex flex-col mt-6 gap-y-2">
-    <app-language-selector></app-language-selector>
-
     @if (userName?.()) {
       <button
         mat-flat-button
