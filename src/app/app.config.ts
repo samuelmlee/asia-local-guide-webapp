@@ -16,6 +16,9 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { environment } from '../environments/environment';
 import { routes } from './app.routes';
 import { httpErrorInterceptor } from './core/services/http-error.interceptor';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { NotificationService } from './core/services/notification.service';
+import { SnackbarNotificationService } from './core/services/snackbar-notification.service';
 
 export const SHORT_DATE_FORMATS: MatDateFormats = MAT_NATIVE_DATE_FORMATS;
 
@@ -33,5 +36,12 @@ export const appConfig: ApplicationConfig = {
     provideNativeDateAdapter(SHORT_DATE_FORMATS),
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideAuth(() => getAuth()),
+    {
+      provide: NotificationService,
+      // Implement DeviceService to resolve Device type and implementation
+      useFactory: (snackBar: MatSnackBar) =>
+        new SnackbarNotificationService(snackBar),
+      deps: [MatSnackBar],
+    },
   ],
 };
