@@ -65,7 +65,7 @@ export class LoginComponent {
 
       this.router.navigate(['/']);
     } catch (error) {
-      this.errorHandler.handleError(error, 'creating account', {
+      this.errorHandler.handleError(error, 'logging in', {
         notify: true,
       });
     } finally {

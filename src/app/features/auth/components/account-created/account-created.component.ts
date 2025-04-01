@@ -53,7 +53,8 @@ export class AccountCreatedComponent implements OnInit {
     if (!user) {
       this.errorHandler.handleError(
         new Error('No user found during onboarding'),
-        'saving preferences'
+        'saving preferences',
+        { notify: true }
       );
     }
 
