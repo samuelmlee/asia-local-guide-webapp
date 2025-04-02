@@ -44,7 +44,7 @@ export class CreateAccountComponent {
     private readonly errorHandler: ErrorHandlerService
   ) {
     // Initialize createAccountForm
-    this.createAccountForm = this.fb.group({
+    this.createAccountForm = this.fb.nonNullable.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
       password: ['', Validators.required],
@@ -60,6 +60,10 @@ export class CreateAccountComponent {
   }
 
   public async createAccount(): Promise<void> {
+    if (!this.createAccountForm.valid) {
+      return;
+    }
+
     try {
       this.submitting.set(true);
       this.createAccountForm.disable();

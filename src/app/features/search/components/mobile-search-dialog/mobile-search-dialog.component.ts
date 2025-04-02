@@ -6,6 +6,7 @@ import {
   signal,
 } from '@angular/core';
 import {
+  FormBuilder,
   FormControl,
   FormGroup,
   FormsModule,
@@ -78,14 +79,7 @@ export class MobileSearchDialogComponent implements OnInit {
 
   public activityTags = signal<ActivityTag[]>([]);
 
-  public readonly searchForm = new FormGroup({
-    startDate: new FormControl<Date | null>(null, Validators.required),
-    endDate: new FormControl<Date | null>(null, Validators.required),
-    destination: new FormControl<string | Destination>('', Validators.required),
-    activities: new FormControl<ActivityTag[]>([]),
-    startTime: new FormControl<Date>(new Date()),
-    endTime: new FormControl<Date>(new Date()),
-  });
+  public searchForm: FormGroup;
 
   constructor(
     private readonly destinationService: DestinationService,
@@ -93,8 +87,22 @@ export class MobileSearchDialogComponent implements OnInit {
     private readonly router: Router,
     private readonly errorHandler: ErrorHandlerService,
     private readonly activityTagService: ActivityTagService,
-    private readonly dialogRef: MatDialogRef<MobileSearchDialogComponent>
-  ) {}
+    private readonly dialogRef: MatDialogRef<MobileSearchDialogComponent>,
+    private readonly fb: FormBuilder
+  ) {
+    // TODO: add validation for startTime and endTime
+    this.searchForm = this.fb.group({
+      startDate: new FormControl<Date | null>(null, Validators.required),
+      endDate: new FormControl<Date | null>(null, Validators.required),
+      destination: new FormControl<string | Destination>('', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      activities: new FormControl<ActivityTag[]>([]),
+      startTime: new FormControl<Date>(new Date()),
+      endTime: new FormControl<Date>(new Date()),
+    });
+  }
 
   public ngOnInit(): void {
     this.filteredOptions = this.searchForm
@@ -113,15 +121,15 @@ export class MobileSearchDialogComponent implements OnInit {
   }
 
   public async submitSearch(): Promise<void> {
-    if (this.searchForm.invalid) {
+    if (this.searchForm?.invalid) {
       return;
     }
 
-    const request = this.searchForm.value as SearchRequest;
+    const request: SearchRequest = this.searchForm?.value;
 
     try {
       this.isLoading.set(true);
-      this.searchForm.disable();
+      this.searchForm?.disable();
 
       await this.planningService.getDayPlansForRequest(request);
 
@@ -137,7 +145,7 @@ export class MobileSearchDialogComponent implements OnInit {
       });
     } finally {
       this.isLoading.set(false);
-      this.searchForm.enable();
+      this.searchForm?.enable();
     }
   }
 

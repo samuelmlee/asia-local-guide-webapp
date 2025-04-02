@@ -36,7 +36,10 @@ export class LoginComponent {
 
   public submitting = signal(false);
 
-  public passwordControl = new FormControl('', [Validators.required]);
+  public passwordControl = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.required],
+  });
 
   constructor(
     private readonly router: Router,
@@ -52,9 +55,7 @@ export class LoginComponent {
   }
 
   public async submitPassword(): Promise<void> {
-    const password = this.passwordControl.value;
-
-    if (!password) {
+    if (!this.passwordControl.valid) {
       return;
     }
 
@@ -62,7 +63,10 @@ export class LoginComponent {
       this.submitting.set(true);
       this.passwordControl.disable();
 
-      await this.authService.signInWithEmailAndPassword(this.email(), password);
+      await this.authService.signInWithEmailAndPassword(
+        this.email(),
+        this.passwordControl.value
+      );
 
       this.router.navigate(['/']);
     } catch (error) {

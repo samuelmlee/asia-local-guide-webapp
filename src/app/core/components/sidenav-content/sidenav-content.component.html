@@ -9,11 +9,19 @@
 
   @if (userName?.(); as userName) {
     <div class="flex items-center my-2">
-      <div
-        class="flex items-center justify-center w-9 h-9 rounded-full bg-blue-600 text-white mr-2"
-      >
-        {{ userName.initials }}
-      </div>
+      @if (userName.initials) {
+        <div
+          class="flex items-center justify-center w-9 h-9 rounded-full bg-blue-600 text-white mr-2"
+        >
+          {{ userName.initials }}
+        </div>
+      } @else {
+        <img
+          src="assets/images/Asia_Local_Guide.svg"
+          alt="Logo"
+          class="max-w-9 h-auto mr-2"
+        />
+      }
       <div class="text-sm font-bold">{{ userName.name }}</div>
     </div>
   }
