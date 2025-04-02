@@ -1,4 +1,4 @@
-<div class="p-6 flex flex-col">
+<div class="p-6 flex flex-col relative">
   <h6 i18n="@@core.mobile-search-dialog.title" class="text-center mb-6">
     Configurez votre recherche
   </h6>
@@ -107,7 +107,18 @@
     </mat-chip-listbox>
   </form>
 
-  <button mat-flat-button (click)="submitSearch()" i18n="@@common.search">
+  <button
+    mat-flat-button
+    [disabled]="isLoading()"
+    (click)="submitSearch()"
+    i18n="@@common.search"
+  >
     Rechercher
   </button>
 </div>
+
+@if (isLoading()) {
+  <div class="absolute center-spinner">
+    <mat-progress-spinner mode="indeterminate"> </mat-progress-spinner>
+  </div>
+}

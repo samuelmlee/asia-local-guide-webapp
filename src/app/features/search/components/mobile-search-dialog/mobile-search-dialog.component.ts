@@ -26,6 +26,7 @@ import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { Router } from '@angular/router';
 import {
@@ -60,6 +61,7 @@ import { DestinationService } from '../../services/destination.service';
     MatAutocompleteModule,
     ReactiveFormsModule,
     FormsModule,
+    MatProgressSpinnerModule,
   ],
   providers: [
     { provide: DateAdapter, useClass: NativeDateAdapter },
@@ -130,6 +132,7 @@ export class MobileSearchDialogComponent implements OnInit {
     try {
       this.isLoading.set(true);
       this.searchForm?.disable();
+      this.dialogRef.disableClose = true;
 
       await this.planningService.getDayPlansForRequest(request);
 
@@ -146,6 +149,7 @@ export class MobileSearchDialogComponent implements OnInit {
     } finally {
       this.isLoading.set(false);
       this.searchForm?.enable();
+      this.dialogRef.disableClose = false;
     }
   }
 
