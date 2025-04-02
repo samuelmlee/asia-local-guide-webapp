@@ -18,8 +18,8 @@ import { DayActivity } from '../../models/day-activity.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlanningActivityComponent {
-  public dayActivity = input(null, {
-    transform: (activity: DayActivity | null) => {
+  public dayActivity = input.required({
+    transform: (activity: DayActivity) => {
       if (activity) {
         this.resolveImageUrl(activity);
         return activity;

@@ -29,10 +29,10 @@ import { AuthService } from '../../services/auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AuthEntryComponent {
-  public emailControl = new FormControl('', [
-    Validators.required,
-    Validators.email,
-  ]);
+  public emailControl = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.required, Validators.email],
+  });
 
   constructor(
     private readonly authService: AuthService,
@@ -41,19 +41,18 @@ export class AuthEntryComponent {
   ) {}
 
   public async checkEmailAndNavigate(): Promise<void> {
-    const email = this.emailControl.value;
-
-    if (!email) {
+    if (!this.emailControl.valid) {
       return;
     }
 
     try {
+      const email = this.emailControl.value;
       const emailResult: EmailCheckResult =
         await this.authService.checkEmail(email);
 
-      const destination = emailResult?.exists ? 'login' : 'create-account';
+      const route = emailResult?.exists ? 'login' : 'create-account';
 
-      this.router.navigate([`${destination}`], {
+      this.router.navigate([`${route}`], {
         state: {
           email,
         },

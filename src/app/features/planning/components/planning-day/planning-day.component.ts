@@ -11,11 +11,8 @@ import { PlanningActivityComponent } from '../planning-activity/planning-activit
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlanningDayComponent {
-  public dayPlan = input(null, {
+  public dayPlan = input.required({
     transform: (value: DayPlan) => {
-      if (!value) {
-        return null;
-      }
       return {
         ...value,
         activities: value.activities

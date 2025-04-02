@@ -4,11 +4,11 @@
 
     <div class="text-base text-center">
       <b>
-        {{ dayPlan()?.date | date }}
+        {{ dayPlan().date | date }}
       </b>
     </div>
 
-    @for (dayActivity of dayPlan()?.activities; track dayActivity.startTime) {
+    @for (dayActivity of dayPlan().activities; track dayActivity.startTime) {
       @if (dayActivity) {
         <app-planning-activity
           [dayActivity]="dayActivity"
