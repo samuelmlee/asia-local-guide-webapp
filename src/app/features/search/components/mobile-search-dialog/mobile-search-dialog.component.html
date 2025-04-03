@@ -101,7 +101,7 @@
     </div>
 
     <mat-chip-listbox formControlName="activities" multiple class="mb-8">
-      @for (tag of activityTags(); track tag) {
+      @for (tag of activityTags(); track tag.id) {
         <mat-chip-option [value]="tag">{{ tag.name }}</mat-chip-option>
       }
     </mat-chip-listbox>

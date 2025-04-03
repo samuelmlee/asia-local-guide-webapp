@@ -6,7 +6,7 @@ import {
   runInInjectionContext,
   Signal,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, firstValueFrom, from, map, of, switchMap } from 'rxjs';
 import { createAppError } from '../../../core/models/app-error.model';
 import { ErrorType } from '../../../core/models/error-type.enum';
@@ -113,6 +113,7 @@ export class AuthService {
 
   private initAppUser(): Signal<AppUser | null | undefined> {
     const appUser$ = this.authProvider.user().pipe(
+      takeUntilDestroyed(),
       switchMap((user) => {
         if (!user) return of(null);
 
