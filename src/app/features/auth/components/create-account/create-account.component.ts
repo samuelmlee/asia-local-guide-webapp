@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import {
+  AbstractControl,
   FormBuilder,
   FormGroup,
   FormsModule,
@@ -14,6 +15,12 @@ import { ErrorHandlerService } from '../../../../core/services/error-handler.ser
 import { CreateAccountRequestDTO } from '../../models/create-account-request-dto.model';
 import { AuthService } from '../../services/auth.service';
 import { ResetEmailComponent } from '../reset-email/reset-email.component';
+
+interface CreateAccountFrom {
+  firstName: AbstractControl<string>;
+  lastName: AbstractControl<string>;
+  password: AbstractControl<string>;
+}
 
 @Component({
   selector: 'app-create-account',
@@ -35,8 +42,7 @@ export class CreateAccountComponent {
 
   public submitting = signal(false);
 
-  public createAccountForm: FormGroup;
-
+  public createAccountForm: FormGroup<CreateAccountFrom>;
   constructor(
     private readonly authService: AuthService,
     private readonly fb: FormBuilder,
@@ -44,10 +50,19 @@ export class CreateAccountComponent {
     private readonly errorHandler: ErrorHandlerService
   ) {
     // Initialize createAccountForm
-    this.createAccountForm = this.fb.nonNullable.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      password: ['', Validators.required],
+    this.createAccountForm = this.fb.nonNullable.group<CreateAccountFrom>({
+      firstName: this.fb.control('', {
+        nonNullable: true,
+        validators: Validators.required,
+      }),
+      lastName: fb.control('', {
+        nonNullable: true,
+        validators: Validators.required,
+      }),
+      password: fb.control('', {
+        nonNullable: true,
+        validators: Validators.required,
+      }),
     });
 
     // Get email from navigation state
@@ -69,7 +84,7 @@ export class CreateAccountComponent {
       this.createAccountForm.disable();
 
       const createAccountDTO: CreateAccountRequestDTO = {
-        ...this.createAccountForm.value,
+        ...this.createAccountForm.getRawValue(),
         email: this.email(),
       };
 

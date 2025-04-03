@@ -45,6 +45,15 @@ import { ActivityTagService } from '../../../activity-tag/services/activity-tag.
 import { PlanningService } from '../../../planning/services/planning.service';
 import { DestinationService } from '../../services/destination.service';
 
+interface SearchForm {
+  startDate: FormControl<Date | null>;
+  endDate: FormControl<Date | null>;
+  destination: FormControl<string | Destination>;
+  activities: FormControl<ActivityTag[]>;
+  startTime: FormControl<Date>;
+  endTime: FormControl<Date>;
+}
+
 @Component({
   selector: 'app-mobile-search-dialog',
   imports: [
@@ -81,7 +90,7 @@ export class MobileSearchDialogComponent implements OnInit {
 
   public activityTags = signal<ActivityTag[]>([]);
 
-  public searchForm: FormGroup;
+  public searchForm: FormGroup<SearchForm>;
 
   constructor(
     private readonly destinationService: DestinationService,
@@ -93,16 +102,20 @@ export class MobileSearchDialogComponent implements OnInit {
     private readonly fb: FormBuilder
   ) {
     // TODO: add validation for startTime and endTime
-    this.searchForm = this.fb.group({
+    this.searchForm = this.fb.group<SearchForm>({
       startDate: new FormControl<Date | null>(null, Validators.required),
       endDate: new FormControl<Date | null>(null, Validators.required),
       destination: new FormControl<string | Destination>('', {
         nonNullable: true,
         validators: [Validators.required],
       }),
-      activities: new FormControl<ActivityTag[]>([]),
-      startTime: new FormControl<Date>(new Date()),
-      endTime: new FormControl<Date>(new Date()),
+      activities: new FormControl<ActivityTag[]>([], {
+        nonNullable: true,
+      }),
+      startTime: new FormControl<Date>(new Date(), {
+        nonNullable: true,
+      }),
+      endTime: new FormControl<Date>(new Date(), { nonNullable: true }),
     });
   }
 
@@ -127,14 +140,30 @@ export class MobileSearchDialogComponent implements OnInit {
       return;
     }
 
-    const request: SearchRequest = this.searchForm?.value;
+    const formValue = this.searchForm?.getRawValue();
+
+    const destination =
+      typeof formValue.destination === 'string'
+        ? null
+        : (formValue.destination as Destination);
+
+    if (!destination) {
+      return;
+    }
+
+    const searchRequest: SearchRequest = {
+      startDate: formValue.startDate,
+      endDate: formValue.endDate,
+      destination: destination,
+      activities: formValue.activities || [],
+    };
 
     try {
       this.isLoading.set(true);
       this.searchForm?.disable();
       this.dialogRef.disableClose = true;
 
-      await this.planningService.getDayPlansForRequest(request);
+      await this.planningService.getDayPlansForRequest(searchRequest);
 
       this.router.routeReuseStrategy.shouldReuseRoute = function () {
         return false;
