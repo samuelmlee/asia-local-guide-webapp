@@ -151,14 +151,19 @@ export class MobileSearchDialogComponent implements OnInit {
       return;
     }
 
+    const searchRequest: SearchRequest = {
+      startDate: formValue.startDate,
+      endDate: formValue.endDate,
+      destination: destination,
+      activities: formValue.activities || [],
+    };
+
     try {
       this.isLoading.set(true);
       this.searchForm?.disable();
       this.dialogRef.disableClose = true;
 
-      await this.planningService.getDayPlansForRequest(
-        formValue as SearchRequest
-      );
+      await this.planningService.getDayPlansForRequest(searchRequest);
 
       this.router.routeReuseStrategy.shouldReuseRoute = function () {
         return false;
