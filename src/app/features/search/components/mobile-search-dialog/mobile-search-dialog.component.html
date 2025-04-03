@@ -14,12 +14,12 @@
         formControlName="destination"
         [matAutocomplete]="auto"
       />
-      @if (searchForm.get('destination')?.value) {
+      @if (searchForm.controls.destination.value) {
         <button
           matSuffix
           mat-icon-button
           aria-label="Clear"
-          (click)="searchForm.get('destination')?.setValue('')"
+          (click)="searchForm.controls.destination.setValue('')"
         >
           <mat-icon>close</mat-icon>
         </button>
