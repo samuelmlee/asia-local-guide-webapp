@@ -7,6 +7,7 @@ import {
   Signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { User } from '@angular/fire/auth';
 import { catchError, firstValueFrom, from, map, of, switchMap } from 'rxjs';
 import { createAppError } from '../../../core/models/app-error.model';
 import { ErrorType } from '../../../core/models/error-type.enum';
@@ -18,6 +19,10 @@ import {
 import { ErrorUtils } from '../../../core/utils/error.utils';
 import { AppUser } from '../models/app-user.model';
 import { CreateAccountRequestDTO } from '../models/create-account-request-dto.model';
+import {
+  AuthProviderName,
+  CreateUserDTO,
+} from '../models/create-user-dto.model';
 import { EmailCheckResult } from '../models/email-check-result';
 import { FirebaseAuthProvider } from './firebase-auth.provider';
 
@@ -37,7 +42,6 @@ export class AuthService {
 
   public get appUser(): Signal<AppUser | null | undefined> {
     if (!this._appUser) {
-      // Run in injection context and set _appUser
       runInInjectionContext(
         this.injector,
         () => (this._appUser = this.initAppUser())
@@ -69,17 +73,74 @@ export class AuthService {
       throw createAppError(ErrorType.VALIDATION, 'All fields are required');
     }
 
+    let firebaseUser: User | null = null;
+
     try {
-      const response = await this.authProvider.createUserWithEmailAndPassword(
-        dto.email,
-        dto.password
-      );
-      await this.authProvider.updateProfile(response.user, {
-        displayName: `${dto.firstName} ${dto.lastName}`,
-      });
+      firebaseUser = await this.createFirebaseUser(dto);
     } catch (error) {
-      throw ErrorUtils.formatServiceError(error, 'Error creating user account');
+      throw ErrorUtils.formatServiceError(
+        error,
+        'Error creating user with Firebase'
+      );
     }
+
+    if (!firebaseUser || !firebaseUser.email || !firebaseUser.displayName) {
+      throw createAppError(
+        ErrorType.SERVER,
+        'Invalid created user returned by Firebase'
+      );
+    }
+
+    const createUserDTO: CreateUserDTO = {
+      providerUserId: firebaseUser.uid,
+      providerName: AuthProviderName.FIREBASE,
+      email: firebaseUser.email,
+      name: firebaseUser.displayName,
+    };
+
+    try {
+      await firstValueFrom(
+        this.http.post<void>(`${this.env.apiUrl}/users`, createUserDTO)
+      );
+    } catch (error) {
+      // If the user creation fails, delete the Firebase user
+      if (firebaseUser) {
+        try {
+          await firstValueFrom(
+            this.http.delete<void>(
+              `${this.env.apiUrl}/users/${firebaseUser.uid}`
+            )
+          );
+          this.logger.info(
+            `Deleted Firebase user ${firebaseUser.uid} after registration failure`
+          );
+        } catch (deleteError) {
+          this.logger.error(
+            `Error deleting Firebase user ${firebaseUser.uid} after registration failure`,
+            deleteError
+          );
+        }
+      }
+
+      throw ErrorUtils.formatServiceError(error, 'Registration failed');
+    }
+  }
+
+  private async createFirebaseUser(
+    dto: CreateAccountRequestDTO
+  ): Promise<User> {
+    const response = await this.authProvider.createUserWithEmailAndPassword(
+      dto.email,
+      dto.password
+    );
+
+    const user: User = response.user;
+
+    await this.authProvider.updateProfile(user, {
+      displayName: `${dto.firstName} ${dto.lastName}`,
+    });
+
+    return user;
   }
 
   public async signInWithEmailAndPassword(
