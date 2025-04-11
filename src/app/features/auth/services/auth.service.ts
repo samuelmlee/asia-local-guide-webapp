@@ -7,7 +7,7 @@ import {
   Signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { User } from '@angular/fire/auth';
+import { IdTokenResult, User } from '@angular/fire/auth';
 import { catchError, firstValueFrom, from, map, of, switchMap } from 'rxjs';
 import { createAppError } from '../../../core/models/app-error.model';
 import { ErrorType } from '../../../core/models/error-type.enum';
@@ -77,28 +77,21 @@ export class AuthService {
 
     try {
       firebaseUser = await this.createFirebaseUser(dto);
-    } catch (error) {
-      throw ErrorUtils.formatServiceError(
-        error,
-        'Error creating user with Firebase'
-      );
-    }
 
-    if (!firebaseUser || !firebaseUser.email || !firebaseUser.displayName) {
-      throw createAppError(
-        ErrorType.SERVER,
-        'Invalid created user returned by Firebase'
-      );
-    }
+      if (!firebaseUser || !firebaseUser.email || !firebaseUser.displayName) {
+        throw createAppError(
+          ErrorType.SERVER,
+          'Invalid created user returned by Firebase'
+        );
+      }
 
-    const createUserDTO: CreateUserDTO = {
-      providerUserId: firebaseUser.uid,
-      providerName: AuthProviderName.FIREBASE,
-      email: firebaseUser.email,
-      name: firebaseUser.displayName,
-    };
+      const createUserDTO: CreateUserDTO = {
+        providerUserId: firebaseUser.uid,
+        providerName: AuthProviderName.FIREBASE,
+        email: firebaseUser.email,
+        name: firebaseUser.displayName,
+      };
 
-    try {
       await firstValueFrom(
         this.http.post<void>(`${this.env.apiUrl}/users`, createUserDTO)
       );
@@ -172,13 +165,24 @@ export class AuthService {
     }
   }
 
+  public async getIdTokenResult(
+    forceRefresh = false
+  ): Promise<IdTokenResult | null> {
+    try {
+      return await this.authProvider.getIdTokenResult(forceRefresh);
+    } catch (error) {
+      this.logger.error('Failed to get ID token', error);
+      return null;
+    }
+  }
+
   private initAppUser(): Signal<AppUser | null | undefined> {
     const appUser$ = this.authProvider.user().pipe(
       takeUntilDestroyed(),
       switchMap((user) => {
         if (!user) return of(null);
 
-        // Force refresh of Id token to get roles added by Firebase after account creation
+        // Force refresh of Id token to get roles added by Firebase function after account creation
         return from(user.getIdTokenResult(true)).pipe(
           map((token) => {
             return {

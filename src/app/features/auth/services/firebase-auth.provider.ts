@@ -50,13 +50,16 @@ export class FirebaseAuthProvider {
   }
 
   /**
-   * Get ID token result with claims
+   * Get ID token result with custom claims with roles
    */
-  public getIdTokenResult(
-    user: User,
-    forceRefresh = false
-  ): Promise<IdTokenResult> {
-    return this.ngZone.run(() => user.getIdTokenResult(forceRefresh));
+  public getIdTokenResult(forceRefresh = false): Promise<IdTokenResult | null> {
+    return this.ngZone.run(async () => {
+      if (!this.auth.currentUser) {
+        return null;
+      }
+
+      return this.auth.currentUser.getIdTokenResult(forceRefresh);
+    });
   }
 
   /**
