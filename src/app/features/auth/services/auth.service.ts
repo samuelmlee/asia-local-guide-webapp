@@ -8,7 +8,14 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { IdTokenResult, User } from '@angular/fire/auth';
-import { catchError, firstValueFrom, from, map, of, switchMap } from 'rxjs';
+import {
+  catchError,
+  combineLatest,
+  distinctUntilChanged,
+  firstValueFrom,
+  of,
+  switchMap,
+} from 'rxjs';
 import { createAppError } from '../../../core/models/app-error.model';
 import { ErrorType } from '../../../core/models/error-type.enum';
 import { LoggerService } from '../../../core/services/logger.service';
@@ -177,43 +184,35 @@ export class AuthService {
   }
 
   private initAppUser(): Signal<AppUser | null | undefined> {
-    const appUser$ = this.authProvider.user().pipe(
+    const appUser$ = combineLatest([
+      this.authProvider.user(),
+      this.authProvider.userRoles$,
+    ]).pipe(
       takeUntilDestroyed(),
-      switchMap((user) => {
+      distinctUntilChanged((prev, curr) => {
+        // Only emit if uid is different or roles are different
+        return (
+          prev[0]?.uid === curr[0]?.uid &&
+          prev[1]?.length === curr[1]?.length &&
+          prev[1]?.every((role) => curr[1]?.includes(role))
+        );
+      }),
+      switchMap(([user, userRoles]) => {
         if (!user) return of(null);
 
-        // Force refresh of Id token to get roles added by Firebase function after account creation
-        return from(user.getIdTokenResult(true)).pipe(
-          map((token) => {
-            return {
-              uid: user.uid,
-              email: user.email ?? '',
-              displayName: user.displayName ?? '',
-              // Extract roles from custom claims
-              roles: (token.claims['roles'] as string[]) ?? [],
-              createdAt: user.metadata?.creationTime
-                ? new Date(user.metadata.creationTime)
-                : undefined,
-              lastLoginAt: user.metadata?.lastSignInTime
-                ? new Date(user.metadata.lastSignInTime)
-                : undefined,
-            };
-          }),
-          catchError((error) => {
-            this.logger.error(
-              'Error fetching user Firebase Id token and Roles',
-              error
-            );
-            return of({
-              uid: user.uid,
-              email: user.email ?? '',
-              displayName: user.displayName ?? '',
-              roles: [],
-              createdAt: undefined,
-              lastLoginAt: undefined,
-            });
-          })
-        );
+        return of({
+          uid: user.uid,
+          email: user.email ?? '',
+          displayName: user.displayName ?? '',
+          // Extract roles from userRoles subscription
+          roles: (userRoles as string[]) ?? [],
+          createdAt: user.metadata?.creationTime
+            ? new Date(user.metadata.creationTime)
+            : undefined,
+          lastLoginAt: user.metadata?.lastSignInTime
+            ? new Date(user.metadata.lastSignInTime)
+            : undefined,
+        });
       }),
       catchError((error) => {
         // Log the auth stream error
