@@ -193,8 +193,7 @@ export class AuthService {
         // Only emit if uid is different or roles are different
         return (
           prev[0]?.uid === curr[0]?.uid &&
-          prev[1]?.length === curr[1]?.length &&
-          prev[1]?.every((role) => curr[1]?.includes(role))
+          JSON.stringify(prev[1]) === JSON.stringify(curr[1])
         );
       }),
       switchMap(([user, userRoles]) => {
