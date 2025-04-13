@@ -172,11 +172,11 @@ export class AuthService {
     }
   }
 
-  public async getIdTokenResult(
-    forceRefresh = false
-  ): Promise<IdTokenResult | null> {
+  public async getIdTokenResult(forceRefresh = false): Promise<string | null> {
     try {
-      return await this.authProvider.getIdTokenResult(forceRefresh);
+      const tokenResult: IdTokenResult | null =
+        await this.authProvider.getIdTokenResult(forceRefresh);
+      return tokenResult?.token ?? null;
     } catch (error) {
       this.logger.error('Failed to get ID token', error);
       return null;
