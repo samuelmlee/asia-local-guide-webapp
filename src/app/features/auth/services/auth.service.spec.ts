@@ -4,11 +4,14 @@ import {
   provideExperimentalZonelessChangeDetection,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { IdTokenResult, User, UserCredential } from '@angular/fire/auth';
-import { of } from 'rxjs';
+import { User, UserCredential } from '@angular/fire/auth';
+import { of, ReplaySubject, throwError } from 'rxjs';
 import { ErrorType } from '../../../core/models/error-type.enum';
 import { LoggerService } from '../../../core/services/logger.service';
-import { Environment } from '../../../core/tokens/environment.token';
+import {
+  ENVIRONMENT,
+  Environment,
+} from '../../../core/tokens/environment.token';
 import { ErrorUtils } from '../../../core/utils/error.utils';
 import { EmailCheckResult } from '../models/email-check-result';
 import { AuthService } from './auth.service';
@@ -22,14 +25,20 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     httpClientSpy = jasmine.createSpyObj('HttpClient', ['get', 'post']);
-    authProviderSpy = jasmine.createSpyObj('FirebaseAuthProvider', [
-      'user',
-      'createUserWithEmailAndPassword',
-      'updateProfile',
-      'getIdTokenResult',
-      'signInWithEmailAndPassword',
-      'signOut',
-    ]);
+    authProviderSpy = jasmine.createSpyObj(
+      'FirebaseAuthProvider',
+      [
+        'user',
+        'createUserWithEmailAndPassword',
+        'updateProfile',
+        'getIdTokenResult',
+        'signInWithEmailAndPassword',
+        'signOut',
+      ],
+      {
+        userRoles$: of([]), // Mocking userRoles$ as an observable
+      }
+    );
     loggerSpy = jasmine.createSpyObj('LoggerService', [
       'info',
       'warning',
@@ -70,7 +79,8 @@ describe('AuthService', () => {
     });
 
     it('should return null when user is not authenticated', async () => {
-      // Already configured in beforeEach with of(null)
+      // Mock both required streams
+      authProviderSpy.user.and.returnValue(of(null));
 
       // Call getter to initialize
       service.appUser();
@@ -85,15 +95,6 @@ describe('AuthService', () => {
     it('should map Firebase user to AppUser when authenticated', async () => {
       TestBed.resetTestingModule();
 
-      // Setup with getIdTokenResult spy on the user object
-      const mockToken: Partial<IdTokenResult> = {
-        claims: { roles: ['user', 'admin'] },
-        token: 'mock-token',
-        authTime: '2023-01-01T00:00:00.000Z',
-        expirationTime: '2023-01-02T00:00:00.000Z',
-        issuedAtTime: '2023-01-01T00:00:00.000Z',
-      };
-
       const mockUser = {
         uid: 'test-uid',
         email: 'test@example.com',
@@ -102,26 +103,22 @@ describe('AuthService', () => {
           creationTime: '2023-01-01T12:00:00Z',
           lastSignInTime: '2023-01-02T12:00:00Z',
         },
-        // Add method to mock user
-        getIdTokenResult: () => Promise.resolve(mockToken as IdTokenResult),
       } as unknown as User;
 
-      // Configure the spy on the user
-      spyOn(mockUser, 'getIdTokenResult').and.returnValue(
-        Promise.resolve(mockToken as IdTokenResult)
-      );
-
-      // Re-create all the spies with new behavior
+      // Re-create spies with proper structure
       httpClientSpy = jasmine.createSpyObj('HttpClient', ['get', 'post']);
-      authProviderSpy = jasmine.createSpyObj('FirebaseAuthProvider', ['user']);
+
+      // Create auth provider with both user() method and userRoles$ property
+      authProviderSpy = jasmine.createSpyObj('FirebaseAuthProvider', ['user'], {
+        userRoles$: of(['user', 'admin']),
+      });
+      authProviderSpy.user.and.returnValue(of(mockUser));
+
       loggerSpy = jasmine.createSpyObj('LoggerService', [
         'info',
         'warning',
         'error',
       ]);
-
-      // Configure the auth provider - pass the user with working getIdTokenResult
-      authProviderSpy.user.and.returnValue(of(mockUser));
 
       // Configure TestBed
       TestBed.configureTestingModule({
@@ -130,6 +127,10 @@ describe('AuthService', () => {
           { provide: HttpClient, useValue: httpClientSpy },
           { provide: FirebaseAuthProvider, useValue: authProviderSpy },
           { provide: LoggerService, useValue: loggerSpy },
+          {
+            provide: ENVIRONMENT,
+            useValue: { apiUrl: 'http://localhost:8080' },
+          },
           provideExperimentalZonelessChangeDetection(),
         ],
       });
@@ -137,13 +138,13 @@ describe('AuthService', () => {
       // Get the service
       service = TestBed.inject(AuthService);
 
-      // Call the getter to initialize the signal
+      // Initialize the signal
       service.appUser();
 
-      // Wait for async operations
+      // Wait longer for async operations
       await new Promise((resolve) => setTimeout(resolve, 0));
 
-      // Assert
+      // Assertions
       expect(service.appUser()).toBeTruthy();
       expect(service.appUser()?.uid).toBe('test-uid');
       expect(service.appUser()?.email).toBe('test@example.com');
@@ -151,19 +152,69 @@ describe('AuthService', () => {
       expect(service.appUser()?.roles).toEqual(['user', 'admin']);
       expect(service.appUser()?.createdAt).toEqual(jasmine.any(Date));
       expect(service.appUser()?.lastLoginAt).toEqual(jasmine.any(Date));
-
-      // Verify the user's getIdTokenResult was called with force refresh
-      expect(mockUser.getIdTokenResult).toHaveBeenCalledWith(true);
     });
 
-    it('should handle error when getIdTokenResult throws exception', async () => {
-      // Reset TestBed for this specific test
+    it('should handle errors in the auth stream', async () => {
+      // Need to reset TestBed to get a fresh injection context
       TestBed.resetTestingModule();
 
-      // Create token error
-      const tokenError = new Error('Token fetch failed');
+      // Configure auth provider to throw an error
+      const streamError = new Error('Auth stream failed');
 
-      // Setup user object but with failing getIdTokenResult
+      // Create fresh spies
+      httpClientSpy = jasmine.createSpyObj('HttpClient', ['get', 'post']);
+      authProviderSpy = jasmine.createSpyObj('FirebaseAuthProvider', ['user'], {
+        userRoles$: of([]),
+      });
+      authProviderSpy.user.and.returnValue(throwError(() => streamError));
+
+      loggerSpy = jasmine.createSpyObj('LoggerService', [
+        'info',
+        'warning',
+        'error',
+      ]);
+
+      // Configure TestBed with ALL required providers
+      TestBed.configureTestingModule({
+        providers: [
+          AuthService,
+          { provide: HttpClient, useValue: httpClientSpy },
+          { provide: FirebaseAuthProvider, useValue: authProviderSpy },
+          { provide: LoggerService, useValue: loggerSpy },
+          {
+            provide: ENVIRONMENT,
+            useValue: { apiUrl: 'http://localhost:8080' },
+          },
+          provideExperimentalZonelessChangeDetection(), // Important for takeUntilDestroyed
+        ],
+      });
+
+      // Get the service from TestBed instead of using the one created in beforeEach
+      service = TestBed.inject(AuthService);
+
+      // Initialize the signal
+      service.appUser();
+
+      // Wait for async operations
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      // Should return null on error and log the error
+      expect(service.appUser()).toBeNull();
+
+      // Use jasmine.objectContaining to match just part of the error
+      expect(loggerSpy.error).toHaveBeenCalledWith(
+        'Authentication for user error',
+        jasmine.objectContaining({
+          message: 'Auth stream failed',
+        })
+      );
+    });
+
+    it('should handle changes in user roles', async () => {
+      // Reset TestBed to get a clean environment
+      TestBed.resetTestingModule();
+
+      // Set up initial values
       const mockUser = {
         uid: 'test-uid',
         email: 'test@example.com',
@@ -172,62 +223,63 @@ describe('AuthService', () => {
           creationTime: '2023-01-01T12:00:00Z',
           lastSignInTime: '2023-01-02T12:00:00Z',
         },
-        // Method that throws an error
-        getIdTokenResult: () => Promise.reject(tokenError),
       } as unknown as User;
 
-      // Spy on the method to track calls
-      spyOn(mockUser, 'getIdTokenResult').and.returnValue(
-        Promise.reject(tokenError)
-      );
+      // Use ReplaySubject to allow changing the emitted values
+      const roleSubject = new ReplaySubject<string[]>(1);
 
-      // Re-create spies
+      // Create fresh spies
       httpClientSpy = jasmine.createSpyObj('HttpClient', ['get', 'post']);
-      authProviderSpy = jasmine.createSpyObj('FirebaseAuthProvider', ['user']);
+      authProviderSpy = jasmine.createSpyObj('FirebaseAuthProvider', ['user'], {
+        userRoles$: roleSubject.asObservable(),
+      });
+
+      authProviderSpy.user.and.returnValue(of(mockUser));
+
       loggerSpy = jasmine.createSpyObj('LoggerService', [
         'info',
         'warning',
         'error',
       ]);
 
-      // Configure auth provider to return our user
-      authProviderSpy.user.and.returnValue(of(mockUser));
-
-      // Configure TestBed
+      // Configure TestBed with all required providers
       TestBed.configureTestingModule({
         providers: [
           AuthService,
           { provide: HttpClient, useValue: httpClientSpy },
           { provide: FirebaseAuthProvider, useValue: authProviderSpy },
           { provide: LoggerService, useValue: loggerSpy },
+          {
+            provide: ENVIRONMENT,
+            useValue: { apiUrl: 'http://localhost:8080' },
+          },
           provideExperimentalZonelessChangeDetection(),
         ],
       });
 
-      // Get the service
+      // Get the service from TestBed
       service = TestBed.inject(AuthService);
 
-      // Call the getter to initialize the signal
+      // Set initial roles BEFORE initializing the signal
+      roleSubject.next(['user']);
+
+      // Initialize the signal
       service.appUser();
 
-      // Wait for async operations
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Wait longer for async operations
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
-      // Assert - user should still exist but with no roles
-      expect(service.appUser()).toBeTruthy();
-      expect(service.appUser()?.uid).toBe('test-uid');
-      expect(service.appUser()?.email).toBe('test@example.com');
-      expect(service.appUser()?.displayName).toBe('Test User');
-      expect(service.appUser()?.roles).toEqual([]);
+      // Check initial state
+      expect(service.appUser()?.roles).toEqual(['user']);
 
-      // Verify error was logged
-      expect(loggerSpy.error).toHaveBeenCalledWith(
-        'Error fetching user Firebase Id token and Roles',
-        tokenError
-      );
+      // Change roles
+      roleSubject.next(['user', 'admin']);
 
-      // Verify getIdTokenResult was called with force refresh
-      expect(mockUser.getIdTokenResult).toHaveBeenCalledWith(true);
+      // Wait longer for updates
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      // Check updated roles
+      expect(service.appUser()?.roles).toEqual(['user', 'admin']);
     });
   });
 
@@ -363,7 +415,11 @@ describe('AuthService', () => {
 
     it('should create user account and update profile on successful registration', async () => {
       // Setup mock user and credential
-      const mockUser: Partial<User> = { uid: 'new-user-123' };
+      const mockUser: Partial<User> = {
+        uid: 'new-user-123',
+        email: 'newuser@example.com',
+        displayName: 'New User',
+      };
       const mockUserCredential: Partial<UserCredential> = {
         user: mockUser as User,
       };
@@ -373,6 +429,8 @@ describe('AuthService', () => {
         Promise.resolve(mockUserCredential as UserCredential)
       );
       authProviderSpy.updateProfile.and.returnValue(Promise.resolve());
+
+      httpClientSpy.post.and.returnValue(of({ userId: '1' }));
 
       // Execute registration
       await service.register({
@@ -428,7 +486,7 @@ describe('AuthService', () => {
       expect(authProviderSpy.updateProfile).not.toHaveBeenCalled(); // Should not be called after error
       expect(ErrorUtils.formatServiceError).toHaveBeenCalledWith(
         authError,
-        'Error creating user account'
+        'Registration failed'
       );
     });
 
@@ -469,7 +527,7 @@ describe('AuthService', () => {
       expect(authProviderSpy.updateProfile).toHaveBeenCalled();
       expect(ErrorUtils.formatServiceError).toHaveBeenCalledWith(
         profileError,
-        'Error creating user account'
+        'Registration failed'
       );
     });
   });
