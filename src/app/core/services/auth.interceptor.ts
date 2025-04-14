@@ -5,7 +5,6 @@ import {
   HttpRequest,
 } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { user } from '@angular/fire/auth';
 import { catchError, from, switchMap, throwError } from 'rxjs';
 import { AuthService } from '../../features/auth/services/auth.service';
 import { LoggerService } from './logger.service';
@@ -21,7 +20,7 @@ export const authInterceptor: HttpInterceptorFn = (
   const authService = inject(AuthService);
   const logger = inject(LoggerService);
 
-  if (!user) {
+  if (!authService.appUser()) {
     // User not logged in
     return next(req);
   }
