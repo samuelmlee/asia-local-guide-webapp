@@ -10,9 +10,11 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { IdTokenResult, User } from '@angular/fire/auth';
 import {
   catchError,
-  combineLatest,
   distinctUntilChanged,
   firstValueFrom,
+  from,
+  map,
+  Observable,
   of,
   switchMap,
 } from 'rxjs';
@@ -184,37 +186,48 @@ export class AuthService {
   }
 
   private initAppUser(): Signal<AppUser | null | undefined> {
-    const appUser$ = combineLatest([
-      this.authProvider.user(),
-      this.authProvider.userRoles$,
-    ]).pipe(
+    const appUser$ = this.authProvider.user().pipe(
       takeUntilDestroyed(),
-      distinctUntilChanged((prev, curr) => {
-        // Only emit if uid is different or roles are different
-        return (
-          prev[0]?.uid === curr[0]?.uid &&
-          JSON.stringify(prev[1]) === JSON.stringify(curr[1])
-        );
-      }),
-      switchMap(([user, userRoles]) => {
+      switchMap((user): Observable<AppUser | null> => {
         if (!user) return of(null);
 
-        return of({
-          uid: user.uid,
-          email: user.email ?? '',
-          displayName: user.displayName ?? '',
-          // Extract roles from userRoles subscription
-          roles: (userRoles as string[]) ?? [],
-          createdAt: user.metadata?.creationTime
-            ? new Date(user.metadata.creationTime)
-            : undefined,
-          lastLoginAt: user.metadata?.lastSignInTime
-            ? new Date(user.metadata.lastSignInTime)
-            : undefined,
-        });
+        // Emitting when Initial User is loaded / Firestore roles document changes
+        return this.authProvider.onUserRolesSnapshot(user.uid).pipe(
+          // Force token refresh when roles change in Firestore
+          switchMap(() => from(this.authProvider.getIdTokenResult(true))),
+
+          map(
+            (idToken) =>
+              ({
+                uid: user.uid,
+                email: user.email ?? '',
+                displayName: user.displayName ?? '',
+                // Token claims is single source of truth
+                roles: idToken?.claims['roles'] ?? [],
+                createdAt: user.metadata?.creationTime
+                  ? new Date(user.metadata.creationTime)
+                  : undefined,
+                lastLoginAt: user.metadata?.lastSignInTime
+                  ? new Date(user.metadata.lastSignInTime)
+                  : undefined,
+              }) as AppUser
+          ),
+
+          // Prevent duplicate AppUser emissions when token hasn't changed
+          distinctUntilChanged(
+            (prev, curr) =>
+              prev.uid === curr.uid &&
+              JSON.stringify(prev.roles) === JSON.stringify(curr.roles)
+          ),
+
+          // Handle errors in the token refresh or mapping
+          catchError((error) => {
+            this.logger.error('Error refreshing auth token', error);
+            return of(null);
+          })
+        );
       }),
       catchError((error) => {
-        // Log the auth stream error
         this.logger.error('Authentication for user error', error);
         return of(null);
       })

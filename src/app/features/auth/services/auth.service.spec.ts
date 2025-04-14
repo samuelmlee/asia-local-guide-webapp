@@ -4,8 +4,13 @@ import {
   provideExperimentalZonelessChangeDetection,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { User, UserCredential } from '@angular/fire/auth';
-import { of, ReplaySubject, throwError } from 'rxjs';
+import { IdTokenResult, User, UserCredential } from '@angular/fire/auth';
+import {
+  DocumentData,
+  DocumentSnapshot,
+  QueryDocumentSnapshot,
+} from '@angular/fire/firestore';
+import { of, Subject, throwError } from 'rxjs';
 import { ErrorType } from '../../../core/models/error-type.enum';
 import { LoggerService } from '../../../core/services/logger.service';
 import {
@@ -67,7 +72,68 @@ describe('AuthService', () => {
   });
 
   describe('appUser signal', () => {
+    // Create mock subjects and values
+    let roleDocumentSubject: Subject<
+      DocumentSnapshot<DocumentData, DocumentData>
+    >;
+    let mockIdToken: Partial<IdTokenResult>;
+    beforeEach(() => {
+      // Reset TestBed before each test
+      TestBed.resetTestingModule();
+
+      // Create mock subjects and values
+      roleDocumentSubject = new Subject<
+        DocumentSnapshot<DocumentData, DocumentData>
+      >();
+      mockIdToken = {
+        claims: { roles: ['user', 'admin'] },
+        token: 'mock-token-123',
+      };
+
+      // Set up spies
+      httpClientSpy = jasmine.createSpyObj('HttpClient', ['get', 'post']);
+      loggerSpy = jasmine.createSpyObj('LoggerService', [
+        'info',
+        'warning',
+        'error',
+      ]);
+
+      // Configure auth provider spy with all needed methods
+      authProviderSpy = jasmine.createSpyObj('FirebaseAuthProvider', [
+        'user',
+        'onUserRolesSnapshot',
+        'getIdTokenResult',
+        'signOut',
+      ]);
+
+      // Configure default behaviors
+      authProviderSpy.user.and.returnValue(of(null));
+      authProviderSpy.onUserRolesSnapshot.and.returnValue(
+        roleDocumentSubject.asObservable()
+      );
+      authProviderSpy.getIdTokenResult.and.returnValue(
+        Promise.resolve(mockIdToken as IdTokenResult)
+      );
+
+      TestBed.configureTestingModule({
+        providers: [
+          AuthService,
+          { provide: HttpClient, useValue: httpClientSpy },
+          { provide: FirebaseAuthProvider, useValue: authProviderSpy },
+          { provide: LoggerService, useValue: loggerSpy },
+          {
+            provide: ENVIRONMENT,
+            useValue: { apiUrl: 'http://localhost:8080' },
+          },
+          provideExperimentalZonelessChangeDetection(),
+        ],
+      });
+    });
+
     it('should lazily initialize the signal when first accessed', () => {
+      // Get service from TestBed
+      service = TestBed.inject(AuthService);
+
       // The spy shouldn't be called until we access appUser
       expect(authProviderSpy.user).not.toHaveBeenCalled();
 
@@ -79,22 +145,21 @@ describe('AuthService', () => {
     });
 
     it('should return null when user is not authenticated', async () => {
-      // Mock both required streams
+      // Configure auth provider to return null user
       authProviderSpy.user.and.returnValue(of(null));
 
-      // Call getter to initialize
+      // Get service
+      service = TestBed.inject(AuthService);
+
+      // Access the signal
       service.appUser();
 
-      // Wait for async operations
-      await new Promise((resolve) => setTimeout(resolve, 0));
-
-      // Check the value
+      // Should return null for unauthenticated user
       expect(service.appUser()).toBeNull();
     });
 
-    it('should map Firebase user to AppUser when authenticated', async () => {
-      TestBed.resetTestingModule();
-
+    it('should map Firebase user and token claims to AppUser when authenticated', async () => {
+      // Create a mock user
       const mockUser = {
         uid: 'test-uid',
         email: 'test@example.com',
@@ -105,103 +170,58 @@ describe('AuthService', () => {
         },
       } as unknown as User;
 
-      // Re-create spies with proper structure
-      httpClientSpy = jasmine.createSpyObj('HttpClient', ['get', 'post']);
-
-      // Create auth provider with both user() method and userRoles$ property
-      authProviderSpy = jasmine.createSpyObj('FirebaseAuthProvider', ['user'], {
-        userRoles$: of(['user', 'admin']),
-      });
+      // Configure auth provider for authenticated user flow
       authProviderSpy.user.and.returnValue(of(mockUser));
 
-      loggerSpy = jasmine.createSpyObj('LoggerService', [
-        'info',
-        'warning',
-        'error',
-      ]);
-
-      // Configure TestBed
-      TestBed.configureTestingModule({
-        providers: [
-          AuthService,
-          { provide: HttpClient, useValue: httpClientSpy },
-          { provide: FirebaseAuthProvider, useValue: authProviderSpy },
-          { provide: LoggerService, useValue: loggerSpy },
-          {
-            provide: ENVIRONMENT,
-            useValue: { apiUrl: 'http://localhost:8080' },
-          },
-          provideExperimentalZonelessChangeDetection(),
-        ],
-      });
-
-      // Get the service
+      // Get service
       service = TestBed.inject(AuthService);
 
-      // Initialize the signal
+      // Initialize signal
       service.appUser();
 
-      // Wait longer for async operations
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      const documentSnapshot = {
+        exists(): this is QueryDocumentSnapshot<DocumentData, DocumentData> {
+          return true;
+        },
+        data: () => ({ roles: ['user', 'admin'] }),
+      } as Partial<DocumentSnapshot<DocumentData, DocumentData>>;
 
-      // Assertions
-      expect(service.appUser()).toBeTruthy();
-      expect(service.appUser()?.uid).toBe('test-uid');
-      expect(service.appUser()?.email).toBe('test@example.com');
-      expect(service.appUser()?.displayName).toBe('Test User');
-      expect(service.appUser()?.roles).toEqual(['user', 'admin']);
-      expect(service.appUser()?.createdAt).toEqual(jasmine.any(Date));
-      expect(service.appUser()?.lastLoginAt).toEqual(jasmine.any(Date));
-    });
-
-    it('should handle errors in the auth stream', async () => {
-      // Need to reset TestBed to get a fresh injection context
-      TestBed.resetTestingModule();
-
-      // Configure auth provider to throw an error
-      const streamError = new Error('Auth stream failed');
-
-      // Create fresh spies
-      httpClientSpy = jasmine.createSpyObj('HttpClient', ['get', 'post']);
-      authProviderSpy = jasmine.createSpyObj('FirebaseAuthProvider', ['user'], {
-        userRoles$: of([]),
-      });
-      authProviderSpy.user.and.returnValue(throwError(() => streamError));
-
-      loggerSpy = jasmine.createSpyObj('LoggerService', [
-        'info',
-        'warning',
-        'error',
-      ]);
-
-      // Configure TestBed with ALL required providers
-      TestBed.configureTestingModule({
-        providers: [
-          AuthService,
-          { provide: HttpClient, useValue: httpClientSpy },
-          { provide: FirebaseAuthProvider, useValue: authProviderSpy },
-          { provide: LoggerService, useValue: loggerSpy },
-          {
-            provide: ENVIRONMENT,
-            useValue: { apiUrl: 'http://localhost:8080' },
-          },
-          provideExperimentalZonelessChangeDetection(), // Important for takeUntilDestroyed
-        ],
-      });
-
-      // Get the service from TestBed instead of using the one created in beforeEach
-      service = TestBed.inject(AuthService);
-
-      // Initialize the signal
-      service.appUser();
+      // Emit a document change to trigger the token refresh
+      roleDocumentSubject.next(
+        documentSnapshot as DocumentSnapshot<DocumentData, DocumentData>
+      );
 
       // Wait for async operations
       await new Promise((resolve) => setTimeout(resolve, 0));
 
-      // Should return null on error and log the error
+      // Verify the mapped user with roles from token claims
+      expect(service.appUser()).toBeTruthy();
+      expect(service.appUser()?.uid).toBe('test-uid');
+      expect(service.appUser()?.email).toBe('test@example.com');
+      expect(service.appUser()?.displayName).toBe('Test User');
+      expect(service.appUser()?.roles).toEqual(['user', 'admin']); // From token claims
+      expect(service.appUser()?.createdAt).toEqual(jasmine.any(Date));
+      expect(service.appUser()?.lastLoginAt).toEqual(jasmine.any(Date));
+
+      // Verify token was refreshed
+      expect(authProviderSpy.getIdTokenResult).toHaveBeenCalledWith(true);
+    });
+
+    it('should handle errors in the auth stream', async () => {
+      // Configure auth provider to throw an error
+      const streamError = new Error('Auth stream failed');
+      authProviderSpy.user.and.returnValue(throwError(() => streamError));
+
+      // Get service
+      service = TestBed.inject(AuthService);
+
+      // Initialize signal
+      service.appUser();
+
+      // Should return null on error
       expect(service.appUser()).toBeNull();
 
-      // Use jasmine.objectContaining to match just part of the error
+      // Verify error was logged
       expect(loggerSpy.error).toHaveBeenCalledWith(
         'Authentication for user error',
         jasmine.objectContaining({
@@ -210,11 +230,8 @@ describe('AuthService', () => {
       );
     });
 
-    it('should handle changes in user roles', async () => {
-      // Reset TestBed to get a clean environment
-      TestBed.resetTestingModule();
-
-      // Set up initial values
+    it('should refresh token and update roles when Firestore document changes', async () => {
+      // Create a mock user
       const mockUser = {
         uid: 'test-uid',
         email: 'test@example.com',
@@ -225,61 +242,115 @@ describe('AuthService', () => {
         },
       } as unknown as User;
 
-      // Use ReplaySubject to allow changing the emitted values
-      const roleSubject = new ReplaySubject<string[]>(1);
-
-      // Create fresh spies
-      httpClientSpy = jasmine.createSpyObj('HttpClient', ['get', 'post']);
-      authProviderSpy = jasmine.createSpyObj('FirebaseAuthProvider', ['user'], {
-        userRoles$: roleSubject.asObservable(),
-      });
-
+      // Configure auth provider
       authProviderSpy.user.and.returnValue(of(mockUser));
 
-      loggerSpy = jasmine.createSpyObj('LoggerService', [
-        'info',
-        'warning',
-        'error',
-      ]);
-
-      // Configure TestBed with all required providers
-      TestBed.configureTestingModule({
-        providers: [
-          AuthService,
-          { provide: HttpClient, useValue: httpClientSpy },
-          { provide: FirebaseAuthProvider, useValue: authProviderSpy },
-          { provide: LoggerService, useValue: loggerSpy },
-          {
-            provide: ENVIRONMENT,
-            useValue: { apiUrl: 'http://localhost:8080' },
-          },
-          provideExperimentalZonelessChangeDetection(),
-        ],
-      });
-
-      // Get the service from TestBed
+      // Get service
       service = TestBed.inject(AuthService);
 
-      // Set initial roles BEFORE initializing the signal
-      roleSubject.next(['user']);
-
-      // Initialize the signal
+      // Initialize signal
       service.appUser();
 
-      // Wait longer for async operations
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      const initialSnapshot = {
+        exists(): this is QueryDocumentSnapshot<DocumentData, DocumentData> {
+          return true;
+        },
+      } as Partial<DocumentSnapshot<DocumentData, DocumentData>>;
 
-      // Check initial state
-      expect(service.appUser()?.roles).toEqual(['user']);
+      // Emit first document change
+      roleDocumentSubject.next(
+        initialSnapshot as DocumentSnapshot<DocumentData, DocumentData>
+      );
 
-      // Change roles
-      roleSubject.next(['user', 'admin']);
+      // Verify token was refreshed
+      expect(authProviderSpy.getIdTokenResult).toHaveBeenCalledTimes(1);
 
-      // Wait longer for updates
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      // Update token claims for second refresh
+      const updatedToken: Partial<IdTokenResult> = {
+        claims: { roles: ['user', 'admin', 'super-admin'] },
+        token: 'updated-token-456',
+      };
+      authProviderSpy.getIdTokenResult.and.returnValue(
+        Promise.resolve(updatedToken as IdTokenResult)
+      );
 
-      // Check updated roles
-      expect(service.appUser()?.roles).toEqual(['user', 'admin']);
+      // Reset the spy to track next call
+      authProviderSpy.getIdTokenResult.calls.reset();
+
+      const updatedSnapshot = {
+        exists(): this is QueryDocumentSnapshot<DocumentData, DocumentData> {
+          return true;
+        },
+      } as Partial<DocumentSnapshot<DocumentData, DocumentData>>;
+
+      // Trigger second document change
+      roleDocumentSubject.next(
+        updatedSnapshot as DocumentSnapshot<DocumentData, DocumentData>
+      );
+
+      // Verify token was refreshed again
+      expect(authProviderSpy.getIdTokenResult).toHaveBeenCalledWith(true);
+
+      // Wait for token to be processed
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      // Verify roles were updated from the new token
+      expect(service.appUser()?.roles).toEqual([
+        'user',
+        'admin',
+        'super-admin',
+      ]);
+    });
+
+    it('should handle errors during token refresh', async () => {
+      // Create a mock user
+      const mockUser = {
+        uid: 'test-uid',
+        email: 'test@example.com',
+        displayName: 'Test User',
+        metadata: {
+          creationTime: '2023-01-01T12:00:00Z',
+          lastSignInTime: '2023-01-02T12:00:00Z',
+        },
+      } as unknown as User;
+
+      // Configure auth provider
+      authProviderSpy.user.and.returnValue(of(mockUser));
+
+      // Configure token refresh to fail
+      const tokenError = new Error('Token refresh failed');
+      authProviderSpy.getIdTokenResult.and.returnValue(
+        Promise.reject(tokenError)
+      );
+
+      // Get service
+      service = TestBed.inject(AuthService);
+
+      // Initialize signal
+      service.appUser();
+
+      const documentSnapshot = {
+        exists(): this is QueryDocumentSnapshot<DocumentData, DocumentData> {
+          return true;
+        },
+      } as Partial<DocumentSnapshot<DocumentData, DocumentData>>;
+
+      // Trigger document change
+      roleDocumentSubject.next(
+        documentSnapshot as DocumentSnapshot<DocumentData, DocumentData>
+      );
+
+      // Wait for async operations
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      // Should return null on token error
+      expect(service.appUser()).toBeNull();
+
+      // Verify error was logged
+      expect(loggerSpy.error).toHaveBeenCalledWith(
+        'Error refreshing auth token',
+        jasmine.any(Error)
+      );
     });
   });
 

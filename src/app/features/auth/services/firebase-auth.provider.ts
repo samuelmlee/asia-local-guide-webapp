@@ -1,5 +1,4 @@
 import { Injectable, NgZone } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   Auth,
   createUserWithEmailAndPassword,
@@ -10,27 +9,33 @@ import {
   user,
   UserCredential,
 } from '@angular/fire/auth';
-import { doc, Firestore, onSnapshot } from '@angular/fire/firestore';
-import { BehaviorSubject, Observable } from 'rxjs';
+import {
+  doc,
+  DocumentReference,
+  DocumentSnapshot,
+  Firestore,
+  onSnapshot,
+  Timestamp,
+} from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
 import { LoggerService } from '../../../core/services/logger.service';
+
+export interface UserRolesDocument {
+  email: string;
+  roles: string[];
+  updatedAt: Timestamp; // Firebase timestamp
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class FirebaseAuthProvider {
-  private _userRoles = new BehaviorSubject<string[]>([]);
-  public readonly userRoles$ = this._userRoles.asObservable();
-
-  private userRolesUnsubscribe: (() => void) | null = null;
-
   constructor(
     private readonly auth: Auth,
     private readonly firestore: Firestore,
     private readonly ngZone: NgZone,
     private readonly logger: LoggerService
-  ) {
-    this.setupUserRolesListener();
-  }
+  ) {}
 
   /**
    * Create new user with email and password
@@ -97,77 +102,55 @@ export class FirebaseAuthProvider {
     return this.ngZone.run(() => this.auth.signOut());
   }
 
-  private setupUserRolesListener(): void {
-    this.user()
-      .pipe(takeUntilDestroyed())
-      .subscribe((user) => {
-        if (user) {
-          this.subscribeToUserRoles(user.uid);
-        } else {
-          this.unsubscribeFromUserRoles();
-          this._userRoles.next([]);
-        }
-      });
-  }
-
   /**
-   * Subscribe to user roles changes in Firestore
+   * Listen to a Firestore document and return an Observable of DocumentSnapshot
+   * @param documentPath Path to the document
+   * @returns Observable of document snapshots
    */
-  private subscribeToUserRoles(userId: string): void {
-    try {
-      const userRolesRef = doc(this.firestore, `userRoles/${userId}`);
+  public onUserRolesSnapshot(userId: string): Observable<DocumentSnapshot> {
+    return new Observable<DocumentSnapshot>((observer) => {
+      try {
+        if (userId?.length === 0) {
+          const error = new Error(`Invalid userId: ${userId}`);
+          observer.error(error);
+          return () => {
+            return;
+          };
+        }
 
-      this.userRolesUnsubscribe = onSnapshot(
-        userRolesRef,
-        (snapshot) => {
-          if (snapshot.exists()) {
-            const data = snapshot.data();
-            const roles = (data && data['roles']) || [];
+        const docRef: DocumentReference = doc(
+          this.firestore,
+          `userRoles/${userId}`
+        );
 
-            this.logger.info(
-              `Roles updated from Firestore for ${userId}:`,
-              roles
+        // The onSnapshot function returns an unsubscribe function
+        const unsubscribe = onSnapshot(
+          docRef,
+          (snapshot) => {
+            // Emit the snapshot to subscribers
+            observer.next(snapshot);
+          },
+          (error) => {
+            this.logger.error(
+              `Error in document snapshot listener for userRoles/${userId}`,
+              error
             );
-            this._userRoles.next(roles);
-
-            // Force token refresh to update custom claims
-            this.refreshIdToken();
-          } else {
-            // No roles document exists
-            this._userRoles.next([]);
+            observer.error(error);
           }
-        },
-        (error) => {
-          this.logger.error(
-            `Error listening to user roles for ${userId}:`,
-            error
-          );
-        }
-      );
-    } catch (error) {
-      this.logger.error('Failed to subscribe to user roles:', error);
-    }
-  }
+        );
 
-  /**
-   * Force refresh of the ID token
-   */
-  private async refreshIdToken(): Promise<void> {
-    try {
-      await this.getIdTokenResult(true);
-      this.logger.info('ID token refreshed after role update');
-    } catch (error) {
-      this.logger.error('Failed to refresh ID token:', error);
-    }
-  }
-
-  /**
-   * Unsubscribe from Firestore listener
-   */
-  private unsubscribeFromUserRoles(): void {
-    if (this.userRolesUnsubscribe) {
-      this.userRolesUnsubscribe();
-      this.userRolesUnsubscribe = null;
-    }
+        // Return the teardown logic
+        return () => unsubscribe();
+      } catch (error) {
+        this.logger.error(
+          `Failed to set up document listener for userRoles/${userId}`,
+          error
+        );
+        observer.error(error);
+        return () => {
+          return;
+        };
+      }
+    });
   }
 }
