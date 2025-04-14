@@ -7,7 +7,17 @@ import {
   Signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, firstValueFrom, from, map, of, switchMap } from 'rxjs';
+import { IdTokenResult, User } from '@angular/fire/auth';
+import {
+  catchError,
+  distinctUntilChanged,
+  firstValueFrom,
+  from,
+  map,
+  Observable,
+  of,
+  switchMap,
+} from 'rxjs';
 import { createAppError } from '../../../core/models/app-error.model';
 import { ErrorType } from '../../../core/models/error-type.enum';
 import { LoggerService } from '../../../core/services/logger.service';
@@ -18,6 +28,10 @@ import {
 import { ErrorUtils } from '../../../core/utils/error.utils';
 import { AppUser } from '../models/app-user.model';
 import { CreateAccountRequestDTO } from '../models/create-account-request-dto.model';
+import {
+  AuthProviderName,
+  CreateUserDTO,
+} from '../models/create-user-dto.model';
 import { EmailCheckResult } from '../models/email-check-result';
 import { FirebaseAuthProvider } from './firebase-auth.provider';
 
@@ -37,7 +51,6 @@ export class AuthService {
 
   public get appUser(): Signal<AppUser | null | undefined> {
     if (!this._appUser) {
-      // Run in injection context and set _appUser
       runInInjectionContext(
         this.injector,
         () => (this._appUser = this.initAppUser())
@@ -69,17 +82,67 @@ export class AuthService {
       throw createAppError(ErrorType.VALIDATION, 'All fields are required');
     }
 
+    let firebaseUser: User | null = null;
+
     try {
-      const response = await this.authProvider.createUserWithEmailAndPassword(
-        dto.email,
-        dto.password
+      firebaseUser = await this.createFirebaseUser(dto);
+
+      if (!firebaseUser || !firebaseUser.email || !firebaseUser.displayName) {
+        throw createAppError(
+          ErrorType.SERVER,
+          'Invalid created user returned by Firebase'
+        );
+      }
+
+      const createUserDTO: CreateUserDTO = {
+        providerUserId: firebaseUser.uid,
+        providerName: AuthProviderName.FIREBASE,
+        email: firebaseUser.email,
+        name: firebaseUser.displayName,
+      };
+
+      await firstValueFrom(
+        this.http.post<void>(`${this.env.apiUrl}/users`, createUserDTO)
       );
-      await this.authProvider.updateProfile(response.user, {
-        displayName: `${dto.firstName} ${dto.lastName}`,
-      });
     } catch (error) {
-      throw ErrorUtils.formatServiceError(error, 'Error creating user account');
+      // If the user creation fails, delete the Firebase user
+      if (firebaseUser) {
+        try {
+          await firstValueFrom(
+            this.http.delete<void>(
+              `${this.env.apiUrl}/users/${firebaseUser.uid}`
+            )
+          );
+          this.logger.info(
+            `Deleted Firebase user ${firebaseUser.uid} after registration failure`
+          );
+        } catch (deleteError) {
+          this.logger.error(
+            `Error deleting Firebase user ${firebaseUser.uid} after registration failure`,
+            deleteError
+          );
+        }
+      }
+
+      throw ErrorUtils.formatServiceError(error, 'Registration failed');
     }
+  }
+
+  private async createFirebaseUser(
+    dto: CreateAccountRequestDTO
+  ): Promise<User> {
+    const response = await this.authProvider.createUserWithEmailAndPassword(
+      dto.email,
+      dto.password
+    );
+
+    const user: User = response.user;
+
+    await this.authProvider.updateProfile(user, {
+      displayName: `${dto.firstName} ${dto.lastName}`,
+    });
+
+    return user;
   }
 
   public async signInWithEmailAndPassword(
@@ -111,47 +174,60 @@ export class AuthService {
     }
   }
 
+  public async getIdTokenResult(forceRefresh = false): Promise<string | null> {
+    try {
+      const tokenResult: IdTokenResult | null =
+        await this.authProvider.getIdTokenResult(forceRefresh);
+      return tokenResult?.token ?? null;
+    } catch (error) {
+      this.logger.error('Failed to get ID token', error);
+      return null;
+    }
+  }
+
   private initAppUser(): Signal<AppUser | null | undefined> {
     const appUser$ = this.authProvider.user().pipe(
       takeUntilDestroyed(),
-      switchMap((user) => {
+      switchMap((user): Observable<AppUser | null> => {
         if (!user) return of(null);
 
-        // Force refresh of Id token to get roles added by Firebase after account creation
-        return from(user.getIdTokenResult(true)).pipe(
-          map((token) => {
-            return {
-              uid: user.uid,
-              email: user.email ?? '',
-              displayName: user.displayName ?? '',
-              // Extract roles from custom claims
-              roles: (token.claims['roles'] as string[]) ?? [],
-              createdAt: user.metadata?.creationTime
-                ? new Date(user.metadata.creationTime)
-                : undefined,
-              lastLoginAt: user.metadata?.lastSignInTime
-                ? new Date(user.metadata.lastSignInTime)
-                : undefined,
-            };
-          }),
+        // Emitting when Initial User is loaded / Firestore roles document changes
+        return this.authProvider.onUserRolesSnapshot(user.uid).pipe(
+          // Force token refresh when roles change in Firestore
+          switchMap(() => from(this.authProvider.getIdTokenResult(true))),
+
+          map(
+            (idToken) =>
+              ({
+                uid: user.uid,
+                email: user.email ?? '',
+                displayName: user.displayName ?? '',
+                // Token claims is single source of truth
+                roles: idToken?.claims['roles'] ?? [],
+                createdAt: user.metadata?.creationTime
+                  ? new Date(user.metadata.creationTime)
+                  : undefined,
+                lastLoginAt: user.metadata?.lastSignInTime
+                  ? new Date(user.metadata.lastSignInTime)
+                  : undefined,
+              }) as AppUser
+          ),
+
+          // Prevent duplicate AppUser emissions when token hasn't changed
+          distinctUntilChanged(
+            (prev, curr) =>
+              prev.uid === curr.uid &&
+              JSON.stringify(prev.roles) === JSON.stringify(curr.roles)
+          ),
+
+          // Handle errors in the token refresh or mapping
           catchError((error) => {
-            this.logger.error(
-              'Error fetching user Firebase Id token and Roles',
-              error
-            );
-            return of({
-              uid: user.uid,
-              email: user.email ?? '',
-              displayName: user.displayName ?? '',
-              roles: [],
-              createdAt: undefined,
-              lastLoginAt: undefined,
-            });
+            this.logger.error('Error refreshing auth token', error);
+            return of(null);
           })
         );
       }),
       catchError((error) => {
-        // Log the auth stream error
         this.logger.error('Authentication for user error', error);
         return of(null);
       })

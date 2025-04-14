@@ -1,15 +1,30 @@
 import { Injectable, NgZone } from '@angular/core';
 import {
   Auth,
-  IdTokenResult,
-  User,
-  UserCredential,
   createUserWithEmailAndPassword,
+  IdTokenResult,
   signInWithEmailAndPassword,
   updateProfile,
+  User,
   user,
+  UserCredential,
 } from '@angular/fire/auth';
+import {
+  doc,
+  DocumentReference,
+  DocumentSnapshot,
+  Firestore,
+  onSnapshot,
+  Timestamp,
+} from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
+import { LoggerService } from '../../../core/services/logger.service';
+
+export interface UserRolesDocument {
+  email: string;
+  roles: string[];
+  updatedAt: Timestamp; // Firebase timestamp
+}
 
 @Injectable({
   providedIn: 'root',
@@ -17,7 +32,9 @@ import { Observable } from 'rxjs';
 export class FirebaseAuthProvider {
   constructor(
     private readonly auth: Auth,
-    private readonly ngZone: NgZone
+    private readonly firestore: Firestore,
+    private readonly ngZone: NgZone,
+    private readonly logger: LoggerService
   ) {}
 
   /**
@@ -50,13 +67,16 @@ export class FirebaseAuthProvider {
   }
 
   /**
-   * Get ID token result with claims
+   * Get ID token result with custom claims with roles
    */
-  public getIdTokenResult(
-    user: User,
-    forceRefresh = false
-  ): Promise<IdTokenResult> {
-    return this.ngZone.run(() => user.getIdTokenResult(forceRefresh));
+  public getIdTokenResult(forceRefresh = false): Promise<IdTokenResult | null> {
+    return this.ngZone.run(async () => {
+      if (!this.auth.currentUser) {
+        return null;
+      }
+
+      return this.auth.currentUser.getIdTokenResult(forceRefresh);
+    });
   }
 
   /**
@@ -80,5 +100,57 @@ export class FirebaseAuthProvider {
    */
   public signOut(): Promise<void> {
     return this.ngZone.run(() => this.auth.signOut());
+  }
+
+  /**
+   * Listen to a Firestore document and return an Observable of DocumentSnapshot
+   * @param documentPath Path to the document
+   * @returns Observable of document snapshots
+   */
+  public onUserRolesSnapshot(userId: string): Observable<DocumentSnapshot> {
+    return new Observable<DocumentSnapshot>((observer) => {
+      try {
+        if (userId?.length === 0) {
+          const error = new Error(`Invalid userId: ${userId}`);
+          observer.error(error);
+          return () => {
+            return;
+          };
+        }
+
+        const docRef: DocumentReference = doc(
+          this.firestore,
+          `userRoles/${userId}`
+        );
+
+        // The onSnapshot function returns an unsubscribe function
+        const unsubscribe = onSnapshot(
+          docRef,
+          (snapshot) => {
+            // Emit the snapshot to subscribers
+            observer.next(snapshot);
+          },
+          (error) => {
+            this.logger.error(
+              `Error in document snapshot listener for userRoles/${userId}`,
+              error
+            );
+            observer.error(error);
+          }
+        );
+
+        // Return the teardown logic
+        return () => unsubscribe();
+      } catch (error) {
+        this.logger.error(
+          `Failed to set up document listener for userRoles/${userId}`,
+          error
+        );
+        observer.error(error);
+        return () => {
+          return;
+        };
+      }
+    });
   }
 }
