@@ -17,6 +17,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { environment } from '../environments/environment';
 import { routes } from './app.routes';
+import { authInterceptor } from './core/services/auth.interceptor';
 import { httpErrorInterceptor } from './core/services/http-error.interceptor';
 import { NotificationService } from './core/services/notification.service';
 import { SnackbarNotificationService } from './core/services/snackbar-notification.service';
@@ -33,7 +34,9 @@ export const appConfig: ApplicationConfig = {
       })
     ),
     provideAnimations(),
-    provideHttpClient(withInterceptors([httpErrorInterceptor])),
+    provideHttpClient(
+      withInterceptors([httpErrorInterceptor, authInterceptor])
+    ),
     provideNativeDateAdapter(SHORT_DATE_FORMATS),
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideAuth(() => getAuth()),
