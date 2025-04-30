@@ -82,4 +82,56 @@ describe('DateUtils', () => {
       );
     });
   });
+
+  describe('DateUtils.formatDateToYMDWithTime', () => {
+    // Basic functionality test
+    it('should format a date to YYYY-MM-DDThh:mm format', () => {
+      const date = new Date(2023, 3, 15, 14, 30); // April 15, 2023, 14:30
+      expect(DateUtils.formatDateToYMDWithTime(date)).toBe('2023-04-15T14:30');
+    });
+
+    // Null handling
+    it('should return empty string for null date', () => {
+      expect(DateUtils.formatDateToYMDWithTime(null)).toBe('');
+    });
+
+    // Invalid date handling
+    it('should return empty string for invalid date', () => {
+      const invalidDate = new Date('not a date');
+      expect(DateUtils.formatDateToYMDWithTime(invalidDate)).toBe('');
+    });
+
+    // Zero padding test
+    it('should pad single-digit hours and minutes with leading zeros', () => {
+      const date = new Date(2023, 0, 1, 9, 5); // January 1, 2023, 9:05
+      expect(DateUtils.formatDateToYMDWithTime(date)).toBe('2023-01-01T09:05');
+    });
+
+    // Edge case: midnight
+    it('should correctly format midnight time', () => {
+      const date = new Date(2023, 5, 30, 0, 0); // June 30, 2023, 00:00
+      expect(DateUtils.formatDateToYMDWithTime(date)).toBe('2023-06-30T00:00');
+    });
+
+    // Edge case: end of day
+    it('should correctly format end of day time', () => {
+      const date = new Date(2023, 5, 30, 23, 59); // June 30, 2023, 23:59
+      expect(DateUtils.formatDateToYMDWithTime(date)).toBe('2023-06-30T23:59');
+    });
+
+    // Seconds handling test
+    it('should not include seconds in the formatted output', () => {
+      const date = new Date(2023, 0, 1, 12, 34, 56);
+      expect(DateUtils.formatDateToYMDWithTime(date)).toBe('2023-01-01T12:34');
+    });
+
+    // Month boundary test
+    it('should handle month number correctly (zero-based to one-based)', () => {
+      const date = new Date(2023, 0, 1, 10, 20); // January 1, 2023
+      expect(DateUtils.formatDateToYMDWithTime(date)).toBe('2023-01-01T10:20');
+
+      const date2 = new Date(2023, 11, 31, 10, 20); // December 31, 2023
+      expect(DateUtils.formatDateToYMDWithTime(date2)).toBe('2023-12-31T10:20');
+    });
+  });
 });

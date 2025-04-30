@@ -10,11 +10,28 @@ export const DateUtils = {
     if (!date) return '';
     if (isNaN(date.getTime())) return '';
 
-    const localDate = new Date(date);
-    // Adjust for UTC offset from toISOString
-    const offset = localDate.getTimezoneOffset();
-    const adjustedDate = new Date(localDate.getTime() - offset * 60 * 1000);
+    const localeIsoString = getLocalIsoString(date);
 
-    return adjustedDate.toISOString().split('T')[0];
+    return localeIsoString.split('T')[0];
+  },
+
+  formatDateToYMDWithTime(date: Date | null): string {
+    if (!date) return '';
+    if (isNaN(date.getTime())) return '';
+
+    const localIsoString = getLocalIsoString(date);
+    const [datePart, timePart] = localIsoString.split('T');
+    const [hours, minutes] = timePart.split(':');
+
+    return datePart + 'T' + hours + ':' + minutes;
   },
 };
+
+function getLocalIsoString(date: Date): string {
+  const localDate = new Date(date);
+  // Adjust for UTC offset from toISOString
+  const offset = localDate.getTimezoneOffset();
+  const adjustedDate = new Date(localDate.getTime() - offset * 60 * 1000);
+
+  return adjustedDate.toISOString();
+}
