@@ -51,13 +51,13 @@ describe('DestinationService', () => {
     it('should return destinations when HTTP call is successful', async () => {
       const mockDestinations: Destination[] = [
         {
-          destinationId: 123,
+          destinationId: 'uuid1',
           name: 'Tokyo',
           type: DestinationType.CITY,
           parentName: 'Japan',
         },
         {
-          destinationId: 456,
+          destinationId: 'uuid2',
           name: 'Kyoto',
           type: DestinationType.CITY,
           parentName: 'Japan',

@@ -18,6 +18,7 @@ import {
   Environment,
 } from '../../../core/tokens/environment.token';
 import { ErrorUtils } from '../../../core/utils/error.utils';
+import { AuthProviderName } from '../models/create-user-dto.model';
 import { EmailCheckResult } from '../models/email-check-result';
 import { AuthService } from './auth.service';
 import { FirebaseAuthProvider } from './firebase-auth.provider';
@@ -522,9 +523,20 @@ describe('AuthService', () => {
           displayName: 'Jane Smith',
         }
       );
+
+      // Verify the backend API was called with correct user data
+      expect(httpClientSpy.post).toHaveBeenCalledWith(
+        jasmine.stringContaining('/users'),
+        {
+          providerUserId: 'new-user-123',
+          providerName: AuthProviderName.FIREBASE,
+          email: 'newuser@example.com',
+          name: 'New User',
+        }
+      );
     });
 
-    it('should handle error when creating user account', async () => {
+    it('should handle Firebase authentication errors', async () => {
       // Setup error case
       const authError = new Error('Email already in use');
       const formattedError = {
@@ -561,43 +573,51 @@ describe('AuthService', () => {
       );
     });
 
-    it('should handle error when updating user profile', async () => {
-      // Setup mock user and error cases
-      const mockUser = { uid: 'new-user-123' };
-      const mockUserCredential = { user: mockUser };
-      const profileError = new Error('Profile update failed');
-      const formattedError = {
-        type: ErrorType.VALIDATION,
-        message: 'Formatted profile error',
-        originalError: profileError,
+    it('should handle backend API errors after Firebase user creation', async () => {
+      // Setup mock user and credential
+      const mockUser: Partial<User> = {
+        uid: 'new-user-123',
+        email: 'newuser@example.com',
+        displayName: 'New User',
+      };
+      const mockUserCredential: Partial<UserCredential> = {
+        user: mockUser as User,
       };
 
-      // Reset and reconfigure spies for this test
-      authProviderSpy.createUserWithEmailAndPassword.calls.reset();
-      authProviderSpy.updateProfile.calls.reset();
+      // API error
+      const apiError = new Error('Backend service unavailable');
+      const formattedError = {
+        type: ErrorType.SERVER,
+        message: 'Formatted API error',
+        originalError: apiError,
+      };
 
+      // Configure spies
       authProviderSpy.createUserWithEmailAndPassword.and.returnValue(
         Promise.resolve(mockUserCredential as UserCredential)
       );
-      authProviderSpy.updateProfile.and.returnValue(
-        Promise.reject(profileError)
-      );
+      authProviderSpy.updateProfile.and.returnValue(Promise.resolve());
+      httpClientSpy.post.and.returnValue(throwError(() => apiError));
       spyOn(ErrorUtils, 'formatServiceError').and.returnValue(formattedError);
 
-      // Execute and verify profile error handling
+      // Execute and verify error handling
       await expectAsync(
         service.register({
-          email: 'valid@example.com',
+          email: 'newuser@example.com',
           password: 'password123',
           firstName: 'John',
           lastName: 'Doe',
         })
       ).toBeRejectedWith(formattedError);
 
+      // Verify Firebase methods were called
       expect(authProviderSpy.createUserWithEmailAndPassword).toHaveBeenCalled();
       expect(authProviderSpy.updateProfile).toHaveBeenCalled();
+      expect(httpClientSpy.post).toHaveBeenCalled();
+
+      // Verify error formatting
       expect(ErrorUtils.formatServiceError).toHaveBeenCalledWith(
-        profileError,
+        apiError,
         'Registration failed'
       );
     });

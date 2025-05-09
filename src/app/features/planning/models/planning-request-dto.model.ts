@@ -3,6 +3,6 @@ export interface PlanningRequestDTO {
   startDate: string;
   // Date needs to be in ISO format YYYY-MM-DD
   endDate: string;
-  destinationId: number;
+  destinationId: string;
   activityTagIds: number[];
 }

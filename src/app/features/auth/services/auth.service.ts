@@ -90,7 +90,7 @@ export class AuthService {
       if (!firebaseUser || !firebaseUser.email || !firebaseUser.displayName) {
         throw createAppError(
           ErrorType.SERVER,
-          'Invalid created user returned by Firebase'
+          'Error in creating User for Firebase'
         );
       }
 
@@ -105,24 +105,7 @@ export class AuthService {
         this.http.post<void>(`${this.env.apiUrl}/users`, createUserDTO)
       );
     } catch (error) {
-      // If the user creation fails, delete the Firebase user
-      if (firebaseUser) {
-        try {
-          await firstValueFrom(
-            this.http.delete<void>(
-              `${this.env.apiUrl}/users/${firebaseUser.uid}`
-            )
-          );
-          this.logger.info(
-            `Deleted Firebase user ${firebaseUser.uid} after registration failure`
-          );
-        } catch (deleteError) {
-          this.logger.error(
-            `Error deleting Firebase user ${firebaseUser.uid} after registration failure`,
-            deleteError
-          );
-        }
-      }
+      // If user creation fails, Firebase user is deleted from the backend
 
       throw ErrorUtils.formatServiceError(error, 'Registration failed');
     }

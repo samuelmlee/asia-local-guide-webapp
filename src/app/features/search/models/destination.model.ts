@@ -1,7 +1,7 @@
 import { DestinationType } from './destination-type.model';
 
 export interface Destination {
-  destinationId: number;
+  destinationId: string;
   type: DestinationType;
   name: string;
   parentName: string;

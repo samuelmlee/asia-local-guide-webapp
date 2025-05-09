@@ -33,7 +33,7 @@ describe('PlanningService', () => {
   it('should create PlanningRequestDTO from SearchRequest and validate it', async () => {
     const request: SearchRequest = {
       destination: {
-        destinationId: 123,
+        destinationId: 'uuid1',
         name: 'Tokyo',
         type: DestinationType.CITY,
         parentName: 'Japan',
@@ -60,7 +60,7 @@ describe('PlanningService', () => {
     await service.getDayPlansForRequest(request);
 
     expect(ValidationUtils.validateModel).toHaveBeenCalledWith({
-      destinationId: 123,
+      destinationId: 'uuid1',
       startDate: '2025-01-01',
       endDate: '2025-01-05',
       activityTagIds: [1, 2],
@@ -70,7 +70,7 @@ describe('PlanningService', () => {
   it('should throw app error when validation fails', async () => {
     const request: SearchRequest = {
       destination: {
-        destinationId: 123,
+        destinationId: 'uuid1',
         name: 'Tokyo',
         type: DestinationType.CITY,
         parentName: 'Japan',
@@ -95,7 +95,7 @@ describe('PlanningService', () => {
   it('should throw formatted error when fetchPlanningData fails', async () => {
     const request: SearchRequest = {
       destination: {
-        destinationId: 123,
+        destinationId: 'uuid1',
         name: 'Tokyo',
         type: DestinationType.CITY,
         parentName: 'Japan',
@@ -131,7 +131,7 @@ describe('PlanningService', () => {
   it('should set planning signal when API call is successful', async () => {
     const request: SearchRequest = {
       destination: {
-        destinationId: 123,
+        destinationId: 'uuid1',
         name: 'Tokyo',
         type: DestinationType.CITY,
         parentName: 'Japan',
@@ -171,7 +171,7 @@ describe('PlanningService', () => {
     expect(httpClientSpy.post).toHaveBeenCalledWith(
       `${environment.apiUrl}/planning/generate`,
       {
-        destinationId: 123,
+        destinationId: 'uuid1',
         startDate: '2025-01-01',
         endDate: '2025-01-05',
         activityTagIds: [1],
