@@ -4,13 +4,14 @@ import {
   computed,
   TemplateRef,
 } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { ResponsiveSearchComponent } from '../../../search/components/responsive-search/responsive-search.component';
 import { PlanningService } from '../../services/planning.service';
 import { PlanningDayComponent } from '../planning-day/planning-day.component';
 
 @Component({
   selector: 'app-planning',
-  imports: [ResponsiveSearchComponent, PlanningDayComponent],
+  imports: [ResponsiveSearchComponent, PlanningDayComponent, MatIconModule],
   templateUrl: './planning.component.html',
   styleUrl: './planning.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,4 +41,8 @@ export class PlanningComponent {
   public resultTemplate!: TemplateRef<unknown>;
 
   constructor(private readonly planningService: PlanningService) {}
+
+  public savePlanning(): void {
+    this.planningService.savePlanning();
+  }
 }

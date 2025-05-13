@@ -7,6 +7,13 @@
   </ng-template>
 </app-responsive-search>
 
+<div class="flex">
+  <div (click)="savePlanning()">Sauvegarder ce planning</div>
+  <div>
+    <mat-icon fontIcon="save"></mat-icon>
+  </div>
+</div>
+
 @for (dayPlan of dayPlans(); track dayPlan.date) {
   <app-planning-day [dayPlan]="dayPlan"></app-planning-day>
 }
