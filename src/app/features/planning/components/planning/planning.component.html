@@ -1,16 +1,19 @@
-<app-responsive-search
-  [template]="resultTemplate"
-  class="flex w-full px-4 mb-2"
->
-  <ng-template #resultTemplate>
-    <b>{{ destination() }}</b> • {{ date() }}
-  </ng-template>
-</app-responsive-search>
+<div class="px-4">
+  <app-responsive-search [template]="resultTemplate" class="flex w-full mb-2">
+    <ng-template #resultTemplate>
+      <b>{{ destination() }}</b> • {{ date() }}
+    </ng-template>
+  </app-responsive-search>
 
-<div class="flex">
-  <div (click)="savePlanning()">Sauvegarder ce planning</div>
-  <div>
-    <mat-icon fontIcon="save"></mat-icon>
+  <div class="flex items-center">
+    <div (click)="savePlanning()">Sauvegarder ce planning</div>
+    <div class="flex items-center">
+      <mat-icon fontIcon="save"></mat-icon>
+    </div>
+    <mat-divider [vertical]="true"></mat-divider>
+    <div class="flex items-center">
+      <mat-icon fontIcon="save"></mat-icon>
+    </div>
   </div>
 </div>
 
