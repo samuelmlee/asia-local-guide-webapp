@@ -1,11 +1,16 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
+  ElementRef,
   HostListener,
-  OnDestroy,
   OnInit,
+  signal,
+  ViewChild,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { debounceTime, Subject } from 'rxjs';
@@ -25,7 +30,7 @@ import { PlanningDayComponent } from '../planning-day/planning-day.component';
   styleUrl: './planning.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PlanningComponent implements OnInit, OnDestroy {
+export class PlanningComponent implements OnInit, AfterViewInit {
   public readonly destination = computed(() => {
     const planning = this.planningService.planning();
     return planning?.destination ?? 'Unknown Destination';
@@ -47,27 +52,43 @@ export class PlanningComponent implements OnInit, OnDestroy {
     return planning?.dayPlans ?? [];
   });
 
+  public isStickyFilters = signal<boolean>(false);
+
+  @HostListener('window:scroll') public watchScroll(): void {
+    this.scroll.next(window.pageYOffset);
+  }
+
+  @ViewChild('stickyFilters') private searchElement: ElementRef | null = null;
+
   private scroll = new Subject<number>();
+  private searchPosition = 0;
+
+  constructor(
+    private readonly planningService: PlanningService,
+    private readonly destroRef: DestroyRef
+  ) {}
 
   public ngOnInit(): void {
     this.scroll
-      .pipe(debounceTime(200))
-      .subscribe((y) => this.dealWithScroll(window.scrollY));
+      .pipe(debounceTime(200), takeUntilDestroyed(this.destroRef))
+      .subscribe((y) => this.handleScroll(y));
   }
 
-  public ngOnDestroy(): void {
-    this.scroll.complete();
+  public ngAfterViewInit(): void {
+    this.searchPosition = this.searchElement?.nativeElement.offsetTop;
   }
-
-  @HostListener('window:scroll') public watchScroll(): void {
-    this.scroll.next(window.scrollY);
-  }
-
-  constructor(private readonly planningService: PlanningService) {}
 
   public savePlanning(): void {
     this.planningService.savePlanning();
   }
 
-  private dealWithScroll(y: number): void {}
+  private handleScroll(y: number): void {
+    console.log('scroll y value', y);
+
+    if (y > this.searchPosition) {
+      this.isStickyFilters.set(true);
+    } else {
+      this.isStickyFilters.set(false);
+    }
+  }
 }

@@ -1,18 +1,30 @@
 <div class="px-4">
-  <app-responsive-search [template]="resultTemplate" class="flex w-full mb-2">
-    <ng-template #resultTemplate>
-      <b>{{ destination() }}</b> • {{ date() }}
-    </ng-template>
-  </app-responsive-search>
+  <div class="flex flex-col">
+    <app-responsive-search [template]="resultTemplate" class="flex w-full mb-2">
+      <ng-template #resultTemplate>
+        <b>{{ destination() }}</b> • {{ date() }}
+      </ng-template>
+    </app-responsive-search>
 
-  <div class="flex items-center">
-    <div (click)="savePlanning()">Sauvegarder ce planning</div>
-    <div class="flex items-center">
-      <mat-icon fontIcon="save"></mat-icon>
-    </div>
-    <mat-divider [vertical]="true"></mat-divider>
-    <div class="flex items-center">
-      <mat-icon fontIcon="save"></mat-icon>
+    <div
+      #stickyFilters
+      class="flex items-center w-full h-10"
+      [class.sticky]="isStickyFilters()"
+    >
+      <div
+        (click)="savePlanning()"
+        i18n="@@planning.planning.save-planning"
+        class="text-sm font-medium mr-2"
+      >
+        Sauvegarder ce planning
+      </div>
+      <div class="flex items-center">
+        <mat-icon fontIcon="save"></mat-icon>
+      </div>
+      <hr class="rotate-90 w-6 bg-gray-600" />
+      <div class="flex items-center">
+        <mat-icon fontIcon="tune"></mat-icon>
+      </div>
     </div>
   </div>
 </div>
