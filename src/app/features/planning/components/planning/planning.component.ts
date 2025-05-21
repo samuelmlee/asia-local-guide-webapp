@@ -11,11 +11,13 @@ import {
   ViewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatDialog } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { debounceTime, Subject } from 'rxjs';
 import { ResponsiveSearchComponent } from '../../../search/components/responsive-search/responsive-search.component';
 import { PlanningService } from '../../services/planning.service';
+import { CreatePlanningDialogComponent } from '../create-planning-dialog/create-planning-dialog.component';
 import { PlanningDayComponent } from '../planning-day/planning-day.component';
 
 @Component({
@@ -54,10 +56,6 @@ export class PlanningComponent implements OnInit, AfterViewInit {
 
   public isStickyFilters = signal<boolean>(false);
 
-  @HostListener('window:scroll') public watchScroll(): void {
-    this.scroll.next(window.pageYOffset);
-  }
-
   @ViewChild('stickyFilters') private searchElement: ElementRef | null = null;
 
   private scroll = new Subject<number>();
@@ -65,7 +63,8 @@ export class PlanningComponent implements OnInit, AfterViewInit {
 
   constructor(
     private readonly planningService: PlanningService,
-    private readonly destroRef: DestroyRef
+    private readonly destroRef: DestroyRef,
+    private readonly dialog: MatDialog
   ) {}
 
   public ngOnInit(): void {
@@ -78,8 +77,17 @@ export class PlanningComponent implements OnInit, AfterViewInit {
     this.searchPosition = this.searchElement?.nativeElement.offsetTop;
   }
 
-  public savePlanning(): void {
-    this.planningService.savePlanning();
+  @HostListener('window:scroll')
+  public watchScroll(): void {
+    this.scroll.next(window.pageYOffset);
+  }
+
+  public openCreateDialog(): void {
+    this.dialog.open(CreatePlanningDialogComponent, {
+      width: '100%',
+      maxWidth: '100%',
+      autoFocus: false,
+    });
   }
 
   private handleScroll(y: number): void {
