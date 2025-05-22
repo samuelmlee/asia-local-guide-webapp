@@ -1,14 +1,11 @@
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   computed,
   DestroyRef,
-  ElementRef,
   HostListener,
   OnInit,
   signal,
-  ViewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
@@ -32,7 +29,7 @@ import { PlanningDayComponent } from '../planning-day/planning-day.component';
   styleUrl: './planning.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PlanningComponent implements OnInit, AfterViewInit {
+export class PlanningComponent implements OnInit {
   public readonly destination = computed(() => {
     const planning = this.planningService.planning();
     return planning?.destination ?? 'Unknown Destination';
@@ -56,10 +53,10 @@ export class PlanningComponent implements OnInit, AfterViewInit {
 
   public isStickyFilters = signal<boolean>(false);
 
-  @ViewChild('stickyFilters') private searchElement: ElementRef | null = null;
-
   private scroll = new Subject<number>();
-  private searchPosition = 0;
+  // TODO: cannot get offset Y from native elementfor stickyFilters
+  private readonly REM_TO_PX_RATIO = 16;
+  private readonly searchPosition = 9 * this.REM_TO_PX_RATIO; // 9rem
 
   constructor(
     private readonly planningService: PlanningService,
@@ -71,10 +68,6 @@ export class PlanningComponent implements OnInit, AfterViewInit {
     this.scroll
       .pipe(debounceTime(200), takeUntilDestroyed(this.destroRef))
       .subscribe((y) => this.handleScroll(y));
-  }
-
-  public ngAfterViewInit(): void {
-    this.searchPosition = this.searchElement?.nativeElement.offsetTop;
   }
 
   @HostListener('window:scroll')
@@ -92,8 +85,6 @@ export class PlanningComponent implements OnInit, AfterViewInit {
   }
 
   private handleScroll(y: number): void {
-    console.log('scroll y value', y);
-
     if (y > this.searchPosition) {
       this.isStickyFilters.set(true);
     } else {
