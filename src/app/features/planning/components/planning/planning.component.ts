@@ -53,7 +53,7 @@ export class PlanningComponent implements OnInit {
 
   public isStickyFilters = signal<boolean>(false);
 
-  private scroll = new Subject<number>();
+  private readonly scroll = new Subject<number>();
   // TODO: cannot get offset Y from native elementfor stickyFilters
   private readonly REM_TO_PX_RATIO = 16;
   private readonly searchPosition = 9 * this.REM_TO_PX_RATIO; // 9rem

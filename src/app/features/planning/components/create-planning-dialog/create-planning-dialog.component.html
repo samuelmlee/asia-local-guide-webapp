@@ -1,6 +1,10 @@
 <div class="p-5 flex flex-col">
   <div class="h-7 flex justify-end">
-    <mat-icon fontIcon="close" (click)="closeDialog()"></mat-icon>
+    <mat-icon
+      fontIcon="close"
+      (click)="closeDialog()"
+      (onKeyPress)="closeDialog()"
+    ></mat-icon>
   </div>
   <div
     i18n="@@planning.create-planning-dialog.name-planning"
