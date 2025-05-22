@@ -58,7 +58,7 @@ export class PlanningService {
     }
   }
 
-  public async savePlanning(): Promise<void> {
+  public async savePlanning(name: string): Promise<void> {
     const planning = this.planning();
 
     if (!planning) {
@@ -68,7 +68,7 @@ export class PlanningService {
       );
     }
     const planningCreateRequestDTO: PlanningCreateRequestDTO = {
-      name: planning.destination + ' - ' + new Date().toISOString(),
+      name: name,
 
       dayPlans: planning.dayPlans.map((dayPlan) => ({
         date: DateUtils.formatDateToYMD(dayPlan.date),

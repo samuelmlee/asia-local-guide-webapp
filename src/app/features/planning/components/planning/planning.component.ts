@@ -87,6 +87,7 @@ export class PlanningComponent implements OnInit, AfterViewInit {
       width: '100%',
       maxWidth: '100%',
       autoFocus: false,
+      panelClass: 'full-screen-dialog',
     });
   }
 

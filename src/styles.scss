@@ -43,9 +43,15 @@ body {
   }
 }
 
-.search-dialog {
+.screen-top-dialog {
   .mat-mdc-dialog-surface {
     border-radius: 0;
+  }
+}
+
+.full-screen-dialog {
+  .mat-mdc-dialog-container {
+    padding: 12px;
   }
 }
 
