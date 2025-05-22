@@ -7,7 +7,7 @@ import { ErrorUtils } from '../../../core/utils/error.utils';
 import { ValidationUtils } from '../../../core/utils/validation.utils';
 import { DestinationType } from '../../search/models/destination-type.model';
 import { SearchRequest } from '../../search/models/search-request.model';
-import { BookingProdiverName } from '../models/booking-provider-name.enum';
+import { BookingProviderName } from '../models/booking-provider-name.enum';
 import { Planning } from '../models/planning.model';
 import { PlanningService } from './planning.service';
 
@@ -217,7 +217,7 @@ describe('PlanningService', () => {
                 providerUrl: 'http://example.com',
                 startTime: new Date('2025-01-01T10:00:00'),
                 endTime: new Date('2025-01-01T12:00:00'),
-                bookingProviderName: BookingProdiverName.VIATOR,
+                bookingProviderName: BookingProviderName.VIATOR,
               },
             ],
           },
@@ -326,7 +326,7 @@ describe('PlanningService', () => {
               activities: [
                 {
                   productCode: 'PROD123',
-                  bookingProviderName: BookingProdiverName.VIATOR,
+                  bookingProviderName: BookingProviderName.VIATOR,
                   startTime: '2025-01-01T10:00:00',
                   endTime: '2025-01-01T10:00:00',
                 },

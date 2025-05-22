@@ -1,4 +1,4 @@
-import { BookingProdiverName as BookingProviderName } from './booking-provider-name.enum';
+import { BookingProviderName } from './booking-provider-name.enum';
 
 export interface DayActivity {
   productCode: string;

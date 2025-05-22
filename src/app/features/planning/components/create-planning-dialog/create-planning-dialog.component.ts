@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { ErrorHandlerService } from '../../../../core/services/error-handler.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 import { PlanningService } from '../../services/planning.service';
 
 @Component({
@@ -18,24 +19,21 @@ import { PlanningService } from '../../services/planning.service';
     MatInputModule,
   ],
   templateUrl: './create-planning-dialog.component.html',
-  styleUrl: './create-planning-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CreatePlanningDialogComponent {
-  public name: FormControl<string | null> = new FormControl<string | null>(
-    null,
-    {
-      validators: [Validators.required],
-      nonNullable: true,
-    }
-  );
+  public name: FormControl<string> = new FormControl<string>('', {
+    validators: [Validators.required],
+    nonNullable: true,
+  });
 
   public isLoading = signal<boolean>(false);
 
   constructor(
     private readonly planningService: PlanningService,
     private readonly dialogRef: MatDialogRef<CreatePlanningDialogComponent>,
-    private readonly errorHandler: ErrorHandlerService
+    private readonly errorHandler: ErrorHandlerService,
+    private readonly notificationService: NotificationService
   ) {}
 
   public closeDialog(): void {
@@ -43,7 +41,7 @@ export class CreatePlanningDialogComponent {
   }
 
   public async savePlanning(): Promise<void> {
-    if (!this.name.value) {
+    if (this.name.invalid || !this.name.value) {
       return;
     }
 
@@ -53,6 +51,7 @@ export class CreatePlanningDialogComponent {
       this.dialogRef.disableClose = true;
 
       await this.planningService.savePlanning(this.name.value);
+      this.notificationService.showSuccess('Planning created successfully');
       this.dialogRef.close();
     } catch (error) {
       this.errorHandler.handleError(error, 'saving planning', {

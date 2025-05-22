@@ -1,4 +1,4 @@
-import { BookingProdiverName } from './booking-provider-name.enum';
+import { BookingProviderName } from './booking-provider-name.enum';
 
 export interface PlanningCreateRequestDTO {
   name: string;
@@ -13,7 +13,7 @@ export interface CreateDayPlanDTO {
 
 export interface CreateDayActivityDTO {
   productCode: string;
-  bookingProviderName: BookingProdiverName;
+  bookingProviderName: BookingProviderName;
   startTime: string;
   endTime: string;
 }
