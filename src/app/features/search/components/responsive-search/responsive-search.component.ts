@@ -27,7 +27,7 @@ export class ResponsiveSearchComponent {
       maxWidth: '100%',
       position: { top: '0' },
       autoFocus: false,
-      panelClass: 'search-dialog',
+      panelClass: 'screen-top-dialog',
     });
   }
 }

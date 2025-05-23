@@ -1,3 +1,5 @@
+import { BookingProviderName } from './booking-provider-name.enum';
+
 export interface DayActivity {
   productCode: string;
   title: string;
@@ -10,6 +12,7 @@ export interface DayActivity {
   providerUrl: string;
   startTime: Date;
   endTime: Date;
+  bookingProviderName: BookingProviderName;
 }
 
 export interface Image {

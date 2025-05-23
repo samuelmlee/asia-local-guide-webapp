@@ -9,6 +9,10 @@ import { ErrorUtils } from '../../../core/utils/error.utils';
 import { ValidationUtils } from '../../../core/utils/validation.utils';
 import { SearchRequest } from '../../search/models/search-request.model';
 import { DayPlan } from '../models/day-plan.model';
+import {
+  CreateDayActivityDTO,
+  PlanningCreateRequestDTO,
+} from '../models/planning-create-request-dto';
 import { PlanningRequestDTO } from '../models/planning-request-dto.model';
 import { Planning } from '../models/planning.model';
 
@@ -54,6 +58,51 @@ export class PlanningService {
     }
   }
 
+  public async savePlanning(name: string): Promise<void> {
+    const planning = this.planning();
+
+    if (!planning) {
+      throw createAppError(
+        ErrorType.VALIDATION,
+        'Planning data is required to save'
+      );
+    }
+    const planningCreateRequestDTO: PlanningCreateRequestDTO = {
+      name: name,
+
+      dayPlans: planning.dayPlans.map((dayPlan) => ({
+        date: DateUtils.formatDateToYMD(dayPlan.date),
+
+        activities: dayPlan.activities.map((activity) => {
+          const createActivity: CreateDayActivityDTO = {
+            productCode: activity.productCode,
+            bookingProviderName: activity.bookingProviderName,
+            startTime: DateUtils.formatDateToYMDWithTime(activity.startTime),
+            endTime: DateUtils.formatDateToYMDWithTime(activity.endTime),
+          };
+
+          return createActivity;
+        }),
+      })),
+    };
+
+    try {
+      ValidationUtils.validateModel(planningCreateRequestDTO);
+    } catch (validationError) {
+      throw createAppError(
+        ErrorType.VALIDATION,
+        (validationError as Error).message,
+        validationError
+      );
+    }
+
+    try {
+      await this.savePlanningData(planningCreateRequestDTO);
+    } catch (error) {
+      throw ErrorUtils.formatServiceError(error, 'Failed to save planning');
+    }
+  }
+
   private async fetchPlanningData(
     request: PlanningRequestDTO,
     destination: string,
@@ -85,5 +134,13 @@ export class PlanningService {
     };
 
     this.planning.set(planning);
+  }
+
+  private async savePlanningData(
+    request: PlanningCreateRequestDTO
+  ): Promise<void> {
+    return firstValueFrom(
+      this.http.post<void>(`${this.env.apiUrl}/planning`, request)
+    );
   }
 }

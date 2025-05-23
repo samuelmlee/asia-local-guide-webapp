@@ -1,0 +1,18 @@
+.sticky {
+  position: fixed;
+  top: 0;
+  overflow: hidden;
+  z-index: 10;
+  background-color: #faf9fd;
+
+  animation: slideDown 0.3s ease forwards;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
