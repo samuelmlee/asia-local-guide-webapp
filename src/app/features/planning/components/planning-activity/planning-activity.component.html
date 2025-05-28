@@ -11,14 +11,16 @@
         />
       </div>
       <div class="flex flex-col grow shrink basis-3/5 pr-4 py-2">
-        <div class="flex mb-2">
+        <div class="flex mb-2 items-center">
           <mat-icon
             fontIcon="star"
-            class="rating-icon text-emerald-600"
+            class="rating-icon text-emerald-600 mb-1"
           ></mat-icon>
-          {{ activity.combinedAverageRating | number: '1.0-0' }} ({{
-            activity.reviewCount
-          }})
+          <div>
+            {{ activity.combinedAverageRating | number: '1.0-0' }} ({{
+              activity.reviewCount
+            }})
+          </div>
         </div>
         <div class="max-h-20 overflow-hidden">
           <b>
