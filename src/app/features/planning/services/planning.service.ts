@@ -22,6 +22,8 @@ export class PlanningService {
 
   public planning = signal<Planning | null>(null);
 
+  private readonly PLANNING_PATH = 'plannings';
+
   constructor(private readonly http: HttpClient) {}
 
   public async getDayPlansForRequest(request: SearchRequest): Promise<void> {
@@ -110,7 +112,7 @@ export class PlanningService {
     endDate: Date
   ): Promise<void> {
     const calendarDays$ = this.http.post<DayPlan[]>(
-      `${this.env.apiUrl}/planning/generate`,
+      `${this.env.apiUrl}/${this.PLANNING_PATH}/generate`,
       request
     );
 
@@ -140,7 +142,7 @@ export class PlanningService {
     request: PlanningCreateRequestDTO
   ): Promise<void> {
     return firstValueFrom(
-      this.http.post<void>(`${this.env.apiUrl}/planning`, request)
+      this.http.post<void>(`${this.env.apiUrl}/${this.PLANNING_PATH}`, request)
     );
   }
 }
