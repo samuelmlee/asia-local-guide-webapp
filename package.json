@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "analyze-bundle": "ng build --configuration=analyze-bundle && source-map-explorer dist/**/*.js --no-border-checks"
   },
   "private": true,
   "dependencies": {
@@ -23,7 +24,6 @@
     "@angular/platform-browser-dynamic": "^19.2.2",
     "@angular/router": "^19.2.2",
     "rxjs": "~7.8.0",
-    "source-map-explorer": "^2.5.3",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
@@ -48,6 +48,7 @@
     "ng-extract-i18n-merge": "^2.13.1",
     "postcss": "^8.4.49",
     "prettier": "3.4.2",
+    "source-map-explorer": "^2.5.3",
     "tailwindcss": "^3.4.16",
     "typescript": "~5.6.2",
     "typescript-eslint": "8.18.0"
