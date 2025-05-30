@@ -21,8 +21,10 @@ export class PlanningService {
   private env = environment;
 
   private _planning = signal<Planning | null>(null);
-
   public planning = this._planning.asReadonly();
+
+  private _searchRequest = signal<SearchRequest | null>(null);
+  public searchRequest = this._searchRequest.asReadonly();
 
   private readonly PLANNING_PATH = 'plannings';
 
@@ -49,6 +51,8 @@ export class PlanningService {
         validationError
       );
     }
+
+    this._searchRequest.set(request);
 
     try {
       await this.fetchPlanningData(

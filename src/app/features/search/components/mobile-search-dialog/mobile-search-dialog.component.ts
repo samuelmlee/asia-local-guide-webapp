@@ -133,6 +133,8 @@ export class MobileSearchDialogComponent implements OnInit {
       );
 
     this.initActivityTags();
+
+    this.initFormValues();
   }
 
   public async submitSearch(): Promise<void> {
@@ -195,6 +197,19 @@ export class MobileSearchDialogComponent implements OnInit {
           notify: true,
         })
       );
+  }
+
+  private initFormValues(): void {
+    const searchRequest = this.planningService.searchRequest();
+    if (!searchRequest) {
+      return;
+    }
+    this.searchForm.patchValue({
+      startDate: searchRequest.startDate,
+      endDate: searchRequest.endDate,
+      destination: searchRequest.destination,
+      activities: searchRequest.activities,
+    });
   }
 
   private async filter(name: string): Promise<Destination[]> {
