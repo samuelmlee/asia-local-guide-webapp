@@ -20,7 +20,9 @@ import { Planning } from '../models/planning.model';
 export class PlanningService {
   private env = environment;
 
-  public planning = signal<Planning | null>(null);
+  private _planning = signal<Planning | null>(null);
+
+  public planning = this._planning.asReadonly();
 
   private readonly PLANNING_PATH = 'plannings';
 
@@ -61,7 +63,7 @@ export class PlanningService {
   }
 
   public async savePlanning(name: string): Promise<void> {
-    const planning = this.planning();
+    const planning = this._planning();
 
     if (!planning) {
       throw createAppError(
@@ -135,7 +137,7 @@ export class PlanningService {
       endDate,
     };
 
-    this.planning.set(planning);
+    this._planning.set(planning);
   }
 
   private async savePlanningData(
