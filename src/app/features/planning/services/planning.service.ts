@@ -151,4 +151,11 @@ export class PlanningService {
       this.http.post<void>(`${this.env.apiUrl}/${this.PLANNING_PATH}`, request)
     );
   }
+
+  /*
+   * Protected method for unit tests
+   */
+  protected setPlanning(planning: Planning | null): void {
+    this._planning.set(planning);
+  }
 }
