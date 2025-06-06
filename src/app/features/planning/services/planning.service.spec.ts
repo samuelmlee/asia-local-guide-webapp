@@ -1,4 +1,5 @@
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { of } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ErrorType } from '../../../core/models/error-type.enum';
@@ -11,14 +12,25 @@ import { BookingProviderName } from '../models/booking-provider-name.enum';
 import { Planning } from '../models/planning.model';
 import { PlanningService } from './planning.service';
 
+@Injectable()
+class TestPlanningService extends PlanningService {
+  constructor(http: HttpClient) {
+    super(http);
+  }
+
+  public setTestPlanning(planning: Planning | null): void {
+    this.setPlanning(planning);
+  }
+}
+
 describe('PlanningService', () => {
-  let service: PlanningService;
+  let service: TestPlanningService;
   let httpClientSpy: jasmine.SpyObj<HttpClient>;
 
   beforeEach(() => {
     httpClientSpy = jasmine.createSpyObj('HttpClient', ['post']);
 
-    service = new PlanningService(httpClientSpy);
+    service = new TestPlanningService(httpClientSpy);
   });
 
   describe('getDayPlansForRequest', () => {
@@ -174,7 +186,7 @@ describe('PlanningService', () => {
 
       // Verify HTTP request was made correctly
       expect(httpClientSpy.post).toHaveBeenCalledWith(
-        `${environment.apiUrl}/planning/generate`,
+        `${environment.apiUrl}/plannings/generate`,
         {
           destinationId: 'uuid1',
           startDate: '2025-01-01',
@@ -230,7 +242,7 @@ describe('PlanningService', () => {
 
     it('should throw validation error if planning signal is null', async () => {
       // Ensure planning signal is null
-      service.planning.set(null);
+      service.setTestPlanning(null);
 
       await expectAsync(service.savePlanning('My Trip')).toBeRejectedWith(
         jasmine.objectContaining({
@@ -243,7 +255,7 @@ describe('PlanningService', () => {
     });
 
     it('should throw validation error if DTO validation fails', async () => {
-      service.planning.set(mockPlanning);
+      service.setTestPlanning(mockPlanning);
 
       // Force validation to fail
       const validationError = new Error('Validation failed');
@@ -261,7 +273,7 @@ describe('PlanningService', () => {
     });
 
     it('should throw formatted error when HTTP request fails', async () => {
-      service.planning.set(mockPlanning);
+      service.setTestPlanning(mockPlanning);
 
       // Set up validation to pass
       spyOn(ValidationUtils, 'validateModel').and.returnValue(undefined);
@@ -289,7 +301,7 @@ describe('PlanningService', () => {
       );
 
       expect(httpClientSpy.post).toHaveBeenCalledWith(
-        `${environment.apiUrl}/planning`,
+        `${environment.apiUrl}/plannings`,
         jasmine.any(Object)
       );
       expect(ErrorUtils.formatServiceError).toHaveBeenCalledWith(
@@ -299,7 +311,7 @@ describe('PlanningService', () => {
     });
 
     it('should successfully save planning when all data is valid', async () => {
-      service.planning.set(mockPlanning);
+      service.setTestPlanning(mockPlanning);
 
       // Set up validation to pass
       spyOn(ValidationUtils, 'validateModel').and.returnValue(undefined);
@@ -317,7 +329,7 @@ describe('PlanningService', () => {
 
       // Verify correct data was sent in the request
       expect(httpClientSpy.post).toHaveBeenCalledWith(
-        `${environment.apiUrl}/planning`,
+        `${environment.apiUrl}/plannings`,
         {
           name: 'My Trip',
           dayPlans: [
