@@ -149,7 +149,7 @@ export class PlanningService {
   }
 
   /*
-   * Proetcted method for unit tests
+   * Protected method for unit tests
    */
   protected setPlanning(planning: Planning | null): void {
     this._planning.set(planning);
